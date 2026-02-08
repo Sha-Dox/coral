@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🪸 CORAL - Start individual OSINT monitor (standalone mode)
+# CORAL - Start individual OSINT monitor (standalone mode)
 # Usage: ./start_monitor.sh [instagram|pinterest|spotify]
 
 cd "$(dirname "$0")"
@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 MONITOR=$1
 
 if [ -z "$MONITOR" ]; then
-    echo "🪸 CORAL - Individual Monitor Starter"
+    echo "CORAL - Individual Monitor Starter"
     echo ""
     echo "Usage: $0 [instagram|pinterest|spotify]"
     echo ""
@@ -28,7 +28,7 @@ NC='\033[0m'
 
 echo ""
 echo -e "${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║   🪸 CORAL - Starting ${MONITOR^} Monitor (Standalone)           ${NC}"
+echo -e "${CYAN}║   CORAL - Starting ${MONITOR^} Monitor (Standalone)               ${NC}"
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 

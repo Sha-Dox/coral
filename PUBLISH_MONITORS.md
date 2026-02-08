@@ -252,4 +252,4 @@ All three monitors are:
 
 ---
 
-🪸 **Note:** These monitors work perfectly standalone. CORAL integration is completely optional and mentioned in each README as an enhancement, not a requirement.
+**Note:** These monitors work perfectly standalone. CORAL integration is completely optional and mentioned in each README as an enhancement, not a requirement.

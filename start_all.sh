@@ -1,7 +1,5 @@
 #!/bin/bash
-# ╔════════════════════════════════════════════════════════════╗
-# ║   🪸 CORAL - Start All OSINT Services                      ║
-# ╚════════════════════════════════════════════════════════════╝
+# CORAL - Start All OSINT Services
 #
 # Centralised OSINT Repository and Automation Layer
 # This script starts all OSINT monitoring services based on
@@ -18,7 +16,7 @@ NC='\033[0m' # No Color
 
 echo ""
 echo -e "${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║            🪸 CORAL - OSINT Service Manager                ║${NC}"
+echo -e "${CYAN}║            CORAL - OSINT Service Manager                   ║${NC}"
 echo -e "${CYAN}║   Centralised OSINT Repository and Automation Layer       ║${NC}"
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
@@ -98,7 +96,7 @@ echo -e "${GREEN}✓ Started $STARTED service(s)${NC}"
 echo ""
 
 # Show URLs for enabled services
-[ "$HUB_ENABLED" = "True" ] && echo -e "🪸 CORAL Dashboard:       ${BLUE}http://localhost:$HUB_PORT${NC}"
+[ "$HUB_ENABLED" = "True" ] && echo -e "CORAL Dashboard:          ${BLUE}http://localhost:$HUB_PORT${NC}"
 [ "$PINTEREST_ENABLED" = "True" ] && echo -e "📌 Pinterest Monitor:     ${BLUE}http://localhost:$PINTEREST_PORT${NC}"
 [ "$INSTAGRAM_ENABLED" = "True" ] && echo -e "📸 Instagram Trigger API: ${BLUE}http://localhost:$INSTAGRAM_PORT${NC}"
 [ "$SPOTIFY_ENABLED" = "True" ] && echo -e "🎵 Spotify Trigger API:   ${BLUE}http://localhost:$SPOTIFY_PORT${NC}"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🪸 CORAL - Start only monitors (no hub)
+# CORAL - Start only monitors (no hub)
 # Useful for running monitors independently without the central hub
 
 cd "$(dirname "$0")"
@@ -13,7 +13,7 @@ NC='\033[0m'
 
 echo ""
 echo -e "${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║   🪸 CORAL - Starting Monitors Only (No Hub)              ║${NC}"
+echo -e "${CYAN}║   CORAL - Starting Monitors Only (No Hub)                 ║${NC}"
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
