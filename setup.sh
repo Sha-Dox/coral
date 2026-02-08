@@ -37,7 +37,13 @@ echo "✓ Dependencies installed"
 # Install Maigret (for username search)
 echo ""
 echo "Installing Maigret dependencies..."
-if pip3 install maigret --quiet; then
+if [ -d "maigret" ]; then
+    if pip3 install -e ./maigret --quiet; then
+        echo "✓ Maigret installed (vendored)"
+    else
+        echo "⚠️  Maigret install failed. Username search will be unavailable."
+    fi
+elif pip3 install maigret --quiet; then
     echo "✓ Maigret installed"
 else
     echo "⚠️  Maigret install failed. Username search will be unavailable."

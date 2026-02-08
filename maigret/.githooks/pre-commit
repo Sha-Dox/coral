@@ -1,3 +1,0 @@
-#!/bin/sh
-echo 'Activating update_sitesmd hook script...'
-poetry run update_sitesmd
