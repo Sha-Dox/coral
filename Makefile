@@ -63,17 +63,17 @@ docker-logs:
 
 lint:
 	@echo "Running linters..."
-	flake8 . --exclude=venv,env,.git,__pycache__,instagram_monitor,pinterest_monitor,spotify_monitor,maigret,snapchat_monitor --max-line-length=127
+	flake8 . --exclude=venv,env,.git,__pycache__,instagram_monitor,pinterest_monitor,spotify_monitor,maigret --max-line-length=127
 	@echo "✓ Linting complete"
 
 format:
 	@echo "Formatting code..."
-	black --exclude='venv|env|\.git|instagram_monitor|pinterest_monitor|spotify_monitor|maigret|snapchat_monitor' .
+	black --exclude='venv|env|\.git|instagram_monitor|pinterest_monitor|spotify_monitor|maigret' .
 	@echo "✓ Formatting complete"
 
 security:
 	@echo "Running security checks..."
-	bandit -r . --exclude './venv,./env,./instagram_monitor,./pinterest_monitor,./spotify_monitor,./maigret,./snapchat_monitor' || true
+	bandit -r . --exclude './venv,./env,./instagram_monitor,./pinterest_monitor,./spotify_monitor,./maigret' || true
 	@echo "✓ Security check complete"
 
 clean:
