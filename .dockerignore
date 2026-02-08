@@ -1,0 +1,48 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.db-journal
+
+# Backups
+backups/
+
+# Temp
+*.tmp
+*.temp
+.pytest_cache/
+
+# Docker
+.dockerignore
+
+# Environment
+.env
+.env.local
+
+# Data
+data/
