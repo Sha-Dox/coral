@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            ## CORAL Release ${{ github.ref }}
+            
+            ### What's Included:
+            - CORAL Hub Dashboard
+            - Instagram Monitor
+            - Pinterest Monitor
+            - Spotify Monitor
+            - Integration Module
+            - Complete Documentation
+            
+            ### Installation:
+            ```bash
+            git clone https://github.com/${{ github.repository }}.git
+            cd coral
+            ./start_all.sh
+            ```
+            
+            See [README.md](https://github.com/${{ github.repository }}/blob/main/README.md) for full documentation.
+          draft: false
+          prerelease: false

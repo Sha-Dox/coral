@@ -386,12 +386,34 @@ def api_stats():
         logger.error(f"Error getting stats: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Health check endpoint for monitoring"""
+    try:
+        # Check database connectivity
+        db.get_all_platforms()
+        
+        return jsonify({
+            'status': 'healthy',
+            'service': 'CORAL Hub',
+            'version': '1.0',
+            'timestamp': datetime.now().isoformat()
+        }), 200
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 503
+
 if __name__ == '__main__':
     print("\n" + "="*60)
     print("  CORAL Started")
     print("="*60)
     print(f"  Web UI: http://localhost:{config.PORT}")
     print(f"  Webhook endpoint: http://localhost:{config.PORT}/api/webhook/<platform>")
+    print(f"  Health check: http://localhost:{config.PORT}/api/health")
     print("="*60 + "\n")
     
     app.run(
