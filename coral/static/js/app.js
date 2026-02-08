@@ -4,7 +4,9 @@ let state = {
     platforms: [],
     events: {},
     unlinkedEvents: [],
-    stats: {}
+    stats: {},
+    maigretResults: null,
+    maigretLoading: false
 };
 
 // Initialize app
@@ -37,6 +39,7 @@ function switchTab(tabName) {
     if (tabName === 'instagram') loadPlatformEvents('instagram');
     else if (tabName === 'pinterest') loadPlatformEvents('pinterest');
     else if (tabName === 'spotify') loadPlatformEvents('spotify');
+    else if (tabName === 'maigret') renderMaigretResults();
     else if (tabName === 'settings') loadSettings();
 }
 
@@ -100,6 +103,112 @@ function renderStats() {
         <div class="stat-item">
             <div class="stat-value">${state.stats.recent_events || 0}</div>
             <div class="stat-label">Recent Events</div>
+        </div>
+    `;
+}
+
+// Maigret Search
+async function searchMaigret(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('maigret-username').value.trim();
+    const topSites = parseInt(document.getElementById('maigret-top-sites').value, 10);
+    const timeout = parseInt(document.getElementById('maigret-timeout').value, 10);
+
+    if (!username) {
+        alert('Username is required');
+        return;
+    }
+
+    setMaigretLoading(true);
+    const resultsContainer = document.getElementById('maigret-results');
+    resultsContainer.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-state-icon">🔎</div>
+            <p>Searching for @${escapeHtml(username)}...</p>
+        </div>
+    `;
+
+    try {
+        const data = await apiCall('/api/maigret/search', {
+            method: 'POST',
+            body: JSON.stringify({
+                username,
+                top_sites: topSites,
+                timeout
+            })
+        });
+
+        state.maigretResults = data;
+        renderMaigretResults();
+    } finally {
+        setMaigretLoading(false);
+    }
+}
+
+function setMaigretLoading(isLoading) {
+    state.maigretLoading = isLoading;
+    const button = document.getElementById('maigret-search-btn');
+    if (!button) return;
+    button.disabled = isLoading;
+    button.textContent = isLoading ? 'Searching...' : 'Search';
+}
+
+function renderMaigretResults() {
+    const container = document.getElementById('maigret-results');
+    if (!container) return;
+
+    if (!state.maigretResults) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🔎</div>
+                <p>Run a search to see results.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const { username, stats, found } = state.maigretResults;
+    const duration = formatDuration(stats.duration_ms);
+
+    if (!found || found.length === 0) {
+        container.innerHTML = `
+            <div class="search-summary">
+                <div class="summary-title">Results for @${escapeHtml(username)}</div>
+                <div class="help-text">Checked ${stats.checked_sites} sites in ${duration}.</div>
+            </div>
+            <div class="empty-state">
+                <div class="empty-state-icon">🕵️</div>
+                <p>No claimed profiles found.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="search-summary">
+            <div class="summary-title">Results for @${escapeHtml(username)}</div>
+            <div class="help-text">
+                Found ${found.length} profiles across ${stats.checked_sites} sites in ${duration}.
+            </div>
+        </div>
+        <div class="results-grid">
+            ${found.map(result => {
+                const url = result.url ? escapeHtml(result.url) : '';
+                const tags = result.tags && result.tags.length
+                    ? `<div class="result-tags">${result.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>`
+                    : '';
+                return `
+                    <div class="result-item">
+                        <div class="result-header">
+                            <div class="result-site">${escapeHtml(result.site_name)}</div>
+                            ${url ? `<a class="result-link" href="${url}" target="_blank" rel="noopener">Open</a>` : ''}
+                        </div>
+                        ${url ? `<div class="result-url">${url}</div>` : ''}
+                        ${tags}
+                    </div>
+                `;
+            }).join('')}
         </div>
     `;
 }
@@ -468,6 +577,15 @@ function formatTimeAgo(timestamp) {
     if (weeks < 4) return `${weeks}w ago`;
     const months = Math.floor(days / 30);
     return `${months}mo ago`;
+}
+
+function formatDuration(ms) {
+    if (ms === null || ms === undefined) return '0s';
+    const seconds = ms / 1000;
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remaining = Math.round(seconds % 60);
+    return `${minutes}m ${remaining}s`;
 }
 
 function escapeHtml(text) {

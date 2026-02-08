@@ -34,6 +34,15 @@ pip3 install -r requirements.txt --quiet
 cd ..
 echo "✓ Dependencies installed"
 
+# Install Maigret (for username search)
+echo ""
+echo "Installing Maigret dependencies..."
+if pip3 install maigret --quiet; then
+    echo "✓ Maigret installed"
+else
+    echo "⚠️  Maigret install failed. Username search will be unavailable."
+fi
+
 # Create directories
 echo ""
 echo "Creating directories..."

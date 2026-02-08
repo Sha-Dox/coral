@@ -19,6 +19,7 @@
 
         <nav class="tabs">
             <button class="tab active" data-tab="persons">Persons</button>
+            <button class="tab" data-tab="maigret">Search</button>
             <button class="tab" data-tab="instagram">Instagram</button>
             <button class="tab" data-tab="pinterest">Pinterest</button>
             <button class="tab" data-tab="spotify">Spotify</button>
@@ -47,6 +48,43 @@
                     </div>
                 </div>
                 <div id="unlinked-events" class="events-list"></div>
+            </div>
+
+            <!-- Maigret Search Tab -->
+            <div id="maigret-tab" class="tab-content">
+                <div class="section-header">
+                    <div>
+                        <h2>Username Search</h2>
+                        <p class="help-text">Search public profiles with Maigret</p>
+                    </div>
+                </div>
+
+                <form id="maigret-form" class="search-form" onsubmit="searchMaigret(event)">
+                    <div class="search-grid">
+                        <div class="form-group">
+                            <label for="maigret-username">Username</label>
+                            <input type="text" id="maigret-username" placeholder="e.g. johndoe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="maigret-top-sites">Scope</label>
+                            <select id="maigret-top-sites">
+                                <option value="200">Fast (Top 200 sites)</option>
+                                <option value="500" selected>Standard (Top 500 sites)</option>
+                                <option value="2000">Deep (Top 2000 sites)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="maigret-timeout">Timeout (seconds)</label>
+                            <input type="number" id="maigret-timeout" min="3" max="60" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button id="maigret-search-btn" type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </div>
+                </form>
+
+                <div id="maigret-results" class="search-results"></div>
             </div>
 
             <!-- Instagram Tab -->

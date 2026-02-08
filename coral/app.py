@@ -5,8 +5,11 @@ CORAL - Unified monitoring dashboard
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 from dateutil import parser as date_parser
+from pathlib import Path
+import asyncio
 import json
 import logging
+import sys
 
 import config
 import database as db
@@ -19,6 +22,94 @@ app.config["JSON_SORT_KEYS"] = False
 
 # Initialize database
 db.init_db()
+
+# Maigret integration
+MAIGRET_ROOT = Path(__file__).resolve().parent.parent / "maigret"
+MAIGRET_DB_FILE = None
+MAIGRET_AVAILABLE = False
+MAIGRET_IMPORT_ERROR = None
+maigret = None
+MaigretDatabase = None
+
+try:
+    import maigret as maigret_module
+    from maigret.sites import MaigretDatabase as MaigretDatabaseClass
+
+    maigret = maigret_module
+    MaigretDatabase = MaigretDatabaseClass
+    MAIGRET_AVAILABLE = True
+except Exception as exc:
+    MAIGRET_IMPORT_ERROR = exc
+    if MAIGRET_ROOT.exists():
+        sys.path.insert(0, str(MAIGRET_ROOT))
+        try:
+            import maigret as maigret_module
+            from maigret.sites import MaigretDatabase as MaigretDatabaseClass
+
+            maigret = maigret_module
+            MaigretDatabase = MaigretDatabaseClass
+            MAIGRET_AVAILABLE = True
+            MAIGRET_IMPORT_ERROR = None
+        except Exception as inner_exc:
+            MAIGRET_IMPORT_ERROR = inner_exc
+
+if MAIGRET_AVAILABLE and maigret:
+    MAIGRET_DB_FILE = (
+        Path(maigret.__file__).resolve().parent / "resources" / "data.json"
+    )
+    if not MAIGRET_DB_FILE.exists() and MAIGRET_ROOT.exists():
+        fallback = MAIGRET_ROOT / "maigret" / "resources" / "data.json"
+        if fallback.exists():
+            MAIGRET_DB_FILE = fallback
+
+if MAIGRET_IMPORT_ERROR:
+    logger.warning("Maigret integration unavailable: %s", MAIGRET_IMPORT_ERROR)
+
+
+def run_coroutine(coro):
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        new_loop = asyncio.new_event_loop()
+        try:
+            return new_loop.run_until_complete(coro)
+        finally:
+            new_loop.close()
+
+    return asyncio.run(coro)
+
+
+def run_maigret_search(username, top_sites, timeout, max_connections):
+    if not MAIGRET_AVAILABLE:
+        raise RuntimeError("Maigret is not available in this environment")
+
+    if not MAIGRET_DB_FILE or not MAIGRET_DB_FILE.exists():
+        raise FileNotFoundError("Maigret data file not found")
+
+    db_sites = MaigretDatabase().load_from_path(str(MAIGRET_DB_FILE))
+    sites = db_sites.ranked_sites_dict(
+        top=top_sites,
+        disabled=False,
+        id_type="username",
+    )
+
+    search_logger = logging.getLogger("maigret")
+    search_logger.setLevel(logging.WARNING)
+
+    return run_coroutine(
+        maigret.search(
+            username=username,
+            site_dict=sites,
+            timeout=timeout,
+            logger=search_logger,
+            id_type="username",
+            max_connections=max_connections,
+            no_progressbar=True,
+        )
+    )
 
 
 @app.route("/")
@@ -433,6 +524,79 @@ def api_stats():
         )
     except Exception as e:
         logger.error(f"Error getting stats: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/maigret/search", methods=["POST"])
+def api_maigret_search():
+    """Search usernames across sites using Maigret"""
+    try:
+        data = request.get_json() or {}
+        username = data.get("username", "").strip()
+        if not username:
+            return jsonify({"success": False, "error": "Username is required"}), 400
+
+        if not MAIGRET_AVAILABLE:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Maigret integration is not available",
+                    }
+                ),
+                503,
+            )
+
+        top_sites = int(data.get("top_sites", 200))
+        timeout = int(data.get("timeout", 5))
+        max_connections = int(data.get("max_connections", 50))
+
+        top_sites = max(1, min(top_sites, 5000))
+        timeout = max(1, min(timeout, 60))
+        max_connections = max(1, min(max_connections, 200))
+
+        start_time = datetime.utcnow()
+        results = run_maigret_search(username, top_sites, timeout, max_connections)
+
+        found = []
+        for site_name, site_data in results.items():
+            status = site_data.get("status")
+            if not status:
+                continue
+
+            if not status.is_found():
+                continue
+
+            url = site_data.get("url_user") or getattr(status, "site_url_user", "")
+            status_text = str(getattr(status, "status", "Unknown"))
+
+            found.append(
+                {
+                    "site_name": site_name,
+                    "url": url,
+                    "status": status_text,
+                    "tags": getattr(status, "tags", []),
+                }
+            )
+
+        found.sort(key=lambda item: item["site_name"].lower())
+        duration_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+
+        return jsonify(
+            {
+                "success": True,
+                "username": username,
+                "stats": {
+                    "checked_sites": len(results),
+                    "found_sites": len(found),
+                    "duration_ms": duration_ms,
+                    "top_sites": top_sites,
+                },
+                "found": found,
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error running maigret search: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 

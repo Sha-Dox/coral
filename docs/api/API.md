@@ -191,6 +191,45 @@ Get dashboard statistics.
 
 ---
 
+### Maigret Search API
+
+**POST** `/api/maigret/search`
+
+Search a username across public sites using Maigret.
+
+**Request Body:**
+```json
+{
+  "username": "johndoe",
+  "top_sites": 500,
+  "timeout": 5
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "username": "johndoe",
+  "stats": {
+    "checked_sites": 500,
+    "found_sites": 12,
+    "duration_ms": 4200,
+    "top_sites": 500
+  },
+  "found": [
+    {
+      "site_name": "GitHub",
+      "url": "https://github.com/johndoe",
+      "status": "Claimed",
+      "tags": ["coding"]
+    }
+  ]
+}
+```
+
+---
+
 ## Monitor Integration
 
 ### Sending Events to CORAL

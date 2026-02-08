@@ -30,6 +30,7 @@ Open http://localhost:5002 for the unified dashboard.
 - **Central Config** - One `config.yaml` for everything
 - **Manual Triggers** - Check all platforms instantly
 - **Person Linking** - Link profiles across platforms
+- **Username Search** - Maigret-powered user discovery
 - **Dark Theme** - Beautiful responsive UI
 
 ## Project Layout
@@ -51,6 +52,7 @@ Open http://localhost:5002 for the unified dashboard.
 nano config.yaml
 ./start_all.sh
 ```
+Note: the Username Search tab uses Maigret. If you install manually, run `pip3 install maigret`.
 
 ### Docker
 ```bash
