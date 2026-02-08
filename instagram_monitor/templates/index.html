@@ -1,0 +1,2784 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Monitor - Control Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            background: linear-gradient(90deg, #e94560, #0f3460);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #888;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(233, 69, 96, 0.2);
+            color: #e94560;
+        }
+
+        .nav-item.active {
+            border-left: 3px solid #e94560;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.stopped {
+            background: #888;
+            animation: none;
+        }
+
+        .status-dot.error {
+            background: #f87171;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #e94560;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #138496;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e94560, #0f3460);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger {
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+        }
+
+        .btn-danger:hover {
+            background: rgba(248, 113, 113, 0.3);
+        }
+
+        .btn-success {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+
+        .btn-success:hover {
+            background: rgba(74, 222, 128, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #e94560;
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: #555;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .targets-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .targets-table th,
+        .targets-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .targets-table th {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            font-weight: 600;
+            white-space: nowrap;
+            /* Prevent wrapping of headers */
+        }
+
+        /* Fix mismatch in User View table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .table th {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* Enforce minimum width specifically for Target column to prevent crowding */
+        .table td:first-child,
+        .targets-table td:first-child {
+            min-width: 200px;
+        }
+
+        /* Ensure other columns have enough width */
+        .targets-table td,
+        .table td {
+            min-width: 80px;
+        }
+
+        .target-name {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .target-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e94560, #0f3460);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+
+        .badge-warning {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .badge-error {
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+        }
+
+        .badge-idle {
+            background: rgba(255, 255, 255, 0.1);
+            color: #888;
+        }
+
+        .activity-feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 12px 16px;
+            border-left: 3px solid #e94560;
+            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 8px;
+            border-radius: 0 8px 8px 0;
+            transition: background 0.2s;
+        }
+
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .activity-item.log-update {
+            border-left-color: #4ade80;
+        }
+
+        .activity-item.log-warning {
+            border-left-color: #fbbf24;
+        }
+
+        .activity-item.log-error {
+            border-left-color: #f87171;
+        }
+
+        .activity-item.log-system {
+            border-left-color: #60a5fa;
+        }
+
+        .activity-time {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .activity-message {
+            font-size: 13px;
+        }
+
+        .fetched-history {
+            max-height: 250px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-right: 8px;
+        }
+
+        .fetched-history-item {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .fetched-history-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .fetched-history-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #111;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0f111a;
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 2.5px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-switch input:checked+.toggle-slider {
+            background: #e94560;
+            border-color: #e94560;
+        }
+
+        .toggle-switch input:checked+.toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .setting-info h4 {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .setting-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #e0e0e0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            background: #1a1a2e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.show {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toast.success {
+            border-left: 4px solid #4ade80;
+        }
+
+        .toast.error {
+            border-left: 4px solid #f87171;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .target-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Sorting styles */
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            padding-right: 20px !important;
+        }
+
+        .sortable:hover {
+            color: #e94560 !important;
+        }
+
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 10px;
+            vertical-align: middle;
+            opacity: 0.5;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .sort-indicator.active {
+            opacity: 1;
+            color: #e94560;
+        }
+
+        .sort-indicator.desc {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">📸 Instagram Monitor</div>
+
+        <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+            <span>📊</span> Dashboard
+        </div>
+        <div class="nav-item" data-page="targets" onclick="showPage('targets')">
+            <span>👥</span> Targets
+        </div>
+        <div class="nav-item" data-page="session" onclick="showPage('session')">
+            <span>🔐</span> Session
+        </div>
+        <div class="nav-item" data-page="settings" onclick="showPage('settings')">
+            <span>⚙️</span> Settings
+        </div>
+        <div class="nav-item" data-page="activity" onclick="showPage('activity')">
+            <span>📜</span> Activity Log
+        </div>
+
+        <div style="padding: 0 20px; margin-bottom: 20px;">
+            <select id="log-filter" class="form-input"
+                style="padding: 8px; font-size: 12px; background: rgba(255,255,255,0.05);"
+                onchange="renderAllActivityFeeds()">
+                <option value="all">All Levels</option>
+                <option value="update">Update</option>
+                <option value="system">System</option>
+                <option value="error">Error</option>
+            </select>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 12px; color: #666;">
+                <div>Uptime: <span id="server-uptime">-</span></div>
+                <div style="margin-top: 4px;" id="tool-version">v{{ version }}</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Page -->
+        <div id="page-dashboard" class="page active">
+            <div class="page-header">
+                <h1 class="page-title">Dashboard</h1>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div
+                        style="display: flex; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 8px;">
+                        <button id="mode-user-btn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;"
+                            onclick="setUIMode('user')" title="User Mode - Simple view">
+                            👤 User
+                        </button>
+                        <button id="mode-config-btn" class="btn btn-secondary"
+                            style="padding: 8px 16px; font-size: 13px;" onclick="setUIMode('config')"
+                            title="Config Mode - Detailed view">
+                            ⚙️ Config
+                        </button>
+                    </div>
+                    <div class="status-indicator">
+                        <div class="status-dot" id="global-status-dot"></div>
+                        <span id="global-status-text">Idle</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <button class="btn btn-primary" onclick="showModal('add-target')">
+                    <span>➕</span> Add Target
+                </button>
+                <button class="btn btn-success" id="start-all-btn" onclick="startAllMonitoring()">
+                    <span>▶️</span> Start All
+                </button>
+                <button class="btn btn-info" id="recheck-all-btn" onclick="triggerCheck()">
+                    <span>🔄</span> Recheck All
+                </button>
+                <button class="btn btn-danger" id="stop-all-btn" onclick="stopAllMonitoring()">
+                    <span>⏹️</span> Stop All
+                </button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Active Targets</div>
+                    <div class="stat-value" id="active-targets">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Checks</div>
+                    <div class="stat-value" id="total-checks">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Last Check</div>
+                    <div class="stat-value" id="last-check" style="font-size: 16px;">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Next Check</div>
+                    <div class="stat-value" id="next-check" style="font-size: 16px;">-</div>
+                </div>
+            </div>
+
+            <!-- User mode: Simple view -->
+            <div id="dashboard-user-mode" class="dashboard-mode">
+                <div class="card">
+                    <div class="card-title">Monitored Targets</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                            <tr>
+                                <th class="sortable" onclick="toggleTargetSort()">
+                                    Target <span id="sort-indicator-user" class="sort-indicator">▲</span>
+                                </th>
+                                <th>Vis.</th>
+                                <th>Followers</th>
+                                <th>Following</th>
+                                <th>Posts</th>
+                                <th>Reels</th>
+                                <th>Story</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-targets-simple-body">
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">👥</div>
+                                        <p>Loading targets...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Last Fetched Card -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-title">Last Fetched Update</div>
+                    <div id="last-fetched-container">
+                        <!-- Populated by JS -->
+                        <div class="empty-state">
+                            <p>No posts, reels or stories fetched yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-title">Recent Activity</div>
+                    <div class="activity-feed" id="dashboard-activity">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📜</div>
+                            <p>No activity yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unified Config Page -->
+            <div id="dashboard-config-mode" class="dashboard-mode" style="display: none;">
+                <div class="card">
+                    <div class="card-title">Detailed Configuration</div>
+                    <div class="settings-grid" id="full-config-grid"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-title">Environment Details</div>
+                    <div class="settings-grid" id="env-details-grid"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-title">Detailed Targets View</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" onclick="toggleTargetSort()">
+                                    Target <span id="sort-indicator-config" class="sort-indicator">▲</span>
+                                </th>
+                                <th>Vis.</th>
+                                <th>Followers</th>
+                                <th>Following</th>
+                                <th>Posts</th>
+                                <th>Reels</th>
+                                <th>Story</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-targets-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-title">Recent Activity</div>
+                    <div class="activity-feed" id="dashboard-activity-config">
+                        <!-- Mirror of activity feed -->
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📜</div>
+                            <p>No activity yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Targets Page -->
+        <div id="page-targets" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Manage Targets</h1>
+                <button class="btn btn-primary" onclick="showModal('add-target')">
+                    <span>➕</span> Add Target
+                </button>
+            </div>
+
+            <div class="card">
+                <table class="targets-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="toggleTargetSort()">
+                                Username <span id="sort-indicator-targets" class="sort-indicator">▲</span>
+                            </th>
+                            <th>Added</th>
+                            <th>Last Checked</th>
+                            <th>Next Check</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="targets-list">
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📭</div>
+                                    <p>No targets configured</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Session Page -->
+        <div id="page-session" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Session Management</h1>
+            </div>
+
+            <!-- Session Information Card -->
+            <div class="card">
+                <div class="card-title">Session Information</div>
+                <div style="color: #888; font-size: 14px; line-height: 1.6;">
+                    <div
+                        style="background: rgba(233, 69, 96, 0.1); border-left: 4px solid #e94560; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+                        <span style="color: #e94560; font-weight: bold;">Current Status:</span>
+                        <span id="session-mode-indicator" class="badge badge-idle">Checking...</span>
+                    </div>
+
+                    <p style="margin-bottom: 12px;">
+                        <strong>Session Mode 1 (Anonymous):</strong> No login required. Limited to basic profile info
+                        and post counts.
+                    </p>
+                    <p style="margin-bottom: 12px;">
+                        <strong>Session Mode 2 (Logged In):</strong> Requires Instagram account login. Provides access
+                        to full functionality including detailed follower/following lists, stories content, detailed
+                        post/reel info.
+                    </p>
+                    <p>
+                        <strong>Recommended:</strong> Use Firefox cookie import method for best compatibility and lower
+                        detection risk.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Session Overview Card -->
+            <div class="card">
+                <div class="card-title">Session Overview</div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h4>Session Status</h4>
+                        <p id="session-status-text">Not configured</p>
+                    </div>
+                    <span class="badge badge-idle" id="session-badge">Inactive</span>
+                </div>
+
+                <!-- Session Details Grid -->
+                <div id="session-details"
+                    style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        <div>
+                            <div style="font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px;">
+                                Username</div>
+                            <div style="font-size: 16px; font-weight: 600;" id="session-detail-username">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px;">
+                                Session File</div>
+                            <div style="font-size: 14px; word-break: break-all;" id="session-detail-file">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px;">
+                                File Size</div>
+                            <div style="font-size: 14px;" id="session-detail-size">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px;">
+                                Last Modified</div>
+                            <div style="font-size: 14px;" id="session-detail-modified">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px;">
+                                Method</div>
+                            <div style="font-size: 14px;" id="session-detail-method">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 8px;">
+                                Last Tested</div>
+                            <div style="font-size: 14px;" id="session-detail-tested">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Configuration Card -->
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-title">Configure Session</div>
+
+                <div id="firefox-import-section" style="margin-bottom: 24px;">
+                    <button class="btn btn-secondary" onclick="detectFirefoxProfiles()" id="detect-firefox-btn">
+                        <span>🦊</span> Detect Firefox Profiles
+                    </button>
+
+                    <div id="firefox-profiles-container"
+                        style="display: none; margin-top: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px;">
+                        <label class="form-label">Select Firefox Profile</label>
+                        <select class="form-input" id="firefox-profile-select" style="margin-bottom: 12px;"></select>
+                        <button class="btn btn-primary btn-sm" onclick="importFirefoxSession()">
+                            <span>📥</span> Import Selected Profile
+                        </button>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; margin-top: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">Manual Username Setup (Mode 2)</label>
+                        <input type="text" class="form-input" id="session-username"
+                            placeholder="your_instagram_username">
+                    </div>
+
+                    <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="configureSession()">
+                            <span>🔐</span> Set Username
+                        </button>
+                        <button class="btn btn-secondary" onclick="testSession()">
+                            <span>🧪</span> Test Session
+                        </button>
+                        <button class="btn btn-info" onclick="refreshSession()" id="refresh-session-btn"
+                            style="display: none;">
+                            <span>🔄</span> Refresh
+                        </button>
+                        <button class="btn btn-danger" onclick="clearSession()" id="clear-session-btn"
+                            style="display: none;">
+                            <span>🗑️</span> Reset to Mode 1 (Anonymous)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="page-settings" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Settings</h1>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="saveSettings()">
+                        <span>💾</span> Save Settings
+                    </button>
+                    <button class="btn btn-secondary" onclick="generateConfig()">
+                        <span>📝</span> Generate Config
+                    </button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+                <!-- Check Intervals Card -->
+                <div class="card">
+                    <div class="card-title">Check Intervals</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Base Interval (sec)</label>
+                            <input type="number" class="form-input" id="check-interval" min="300">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Liveness Check (sec)</label>
+                            <input type="number" class="form-input" id="liveness-check-interval" min="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Random Variation Low (sec)</label>
+                            <input type="number" class="form-input" id="random-low" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Random Variation High (sec)</label>
+                            <input type="number" class="form-input" id="random-high" min="0">
+                        </div>
+                    </div>
+                    <p style="font-size: 11px; color: #666; margin-top: -10px;">
+                        Final interval = Base ± Random. <b>Base Interval min: 300s.</b> Use 0 for Liveness Check to
+                        disable.
+                    </p>
+                </div>
+
+                <!-- Tracking Options Card -->
+                <div class="card">
+                    <div class="card-title">Tracking Options</div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Be Human Mode</h4>
+                            <p>Perform random human-like actions</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="be-human">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Skip Session Login</h4>
+                            <p>Anonymous mode (limited info)</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="skip-session-login">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Profile Pic Monitoring</h4>
+                            <p>Detect changes to profile picture</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="profile-pic-changes">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Follower Churn Detection</h4>
+                            <p>Detect additions/removals even if count is same</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="followers-churn">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Skip Follow Changes</h4>
+                            <p>Do not report followers/followings changes</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="skip-follow-changes">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div style="margin-top: 15px; grid-template-columns: 1fr 1fr; display: grid; gap: 10px;">
+                        <div class="setting-row" style="padding: 5px 0;">
+                            <span style="font-size: 13px;">Skip Followers</span>
+                            <label class="toggle-switch"><input type="checkbox" id="skip-followers"><span
+                                    class="toggle-slider"></span></label>
+                        </div>
+                        <div class="setting-row" style="padding: 5px 0;">
+                            <span style="font-size: 13px;">Skip Followings</span>
+                            <label class="toggle-switch"><input type="checkbox" id="skip-followings"><span
+                                    class="toggle-slider"></span></label>
+                        </div>
+                        <div class="setting-row" style="padding: 5px 0;">
+                            <span style="font-size: 13px;">Skip Stories</span>
+                            <label class="toggle-switch"><input type="checkbox" id="skip-stories"><span
+                                    class="toggle-slider"></span></label>
+                        </div>
+                        <div class="setting-row" style="padding: 5px 0;">
+                            <span style="font-size: 13px;">Skip Posts</span>
+                            <label class="toggle-switch"><input type="checkbox" id="skip-posts"><span
+                                    class="toggle-slider"></span></label>
+                        </div>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0; margin-top: 10px;">
+                        <div class="setting-info">
+                            <h4>Get More Post Details</h4>
+                            <p>Detailed fetch for each post</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="get-more-post-details">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Email Notifications Card -->
+                <div class="card">
+                    <div class="card-title">Email Notifications</div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Status & Profile changes</h4>
+                            <p>New posts, reels, stories, bio, pic</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="email-notifications">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Follower changes</h4>
+                            <p>New followers or un-follows</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="follower-notifications">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Error alerts</h4>
+                            <p>Critical monitoring errors</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="error-notifications">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Fetch Hours Range Card -->
+                <div class="card">
+                    <div class="card-title">Fetch Hours Range</div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Limit fetching to specific hours</h4>
+                            <p>Only fetch updates within the defined ranges</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="check-posts-in-hours-range">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h5 style="margin: 0; color: #888;">Range 1</h5>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="h1-enabled">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="form-row" id="h1-inputs">
+                            <div class="form-group">
+                                <label class="form-label">Min Hour (0-23)</label>
+                                <input type="number" class="form-input" id="min-h1" min="0" max="23">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Max Hour (0-23)</label>
+                                <input type="number" class="form-input" id="max-h1" min="0" max="23">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h5 style="margin: 0; color: #888;">Range 2</h5>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="h2-enabled">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="form-row" id="h2-inputs">
+                            <div class="form-group">
+                                <label class="form-label">Min Hour (0-23)</label>
+                                <input type="number" class="form-input" id="min-h2" min="0" max="23">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Max Hour (0-23)</label>
+                                <input type="number" class="form-input" id="max-h2" min="0" max="23">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMTP Settings Card -->
+                <div class="card">
+                    <div class="card-title">SMTP Settings</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">SMTP Host</label>
+                            <input type="text" class="form-input" id="smtp-host" placeholder="your_smtp_server_ssl">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">SMTP Port</label>
+                            <input type="number" class="form-input" id="smtp-port" placeholder="587">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">SMTP User</label>
+                            <input type="text" class="form-input" id="smtp-user" placeholder="your_smtp_user">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">SMTP Password</label>
+                            <input type="password" class="form-input" id="smtp-password" autocomplete="new-password">
+                        </div>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Enable SSL</h4>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="smtp-ssl">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-row" style="margin-top: 10px;">
+                        <div class="form-group">
+                            <label class="form-label">Sender Email</label>
+                            <input type="email" class="form-input" id="sender-email" placeholder="your_sender_email">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Receiver Email</label>
+                            <input type="email" class="form-input" id="receiver-email"
+                                placeholder="your_receiver_email">
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-secondary btn-sm" onclick="testEmail()">
+                            <span>📧</span> Send Test Email
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Webhook Notifications Card -->
+                <div class="card">
+                    <div class="card-title">Webhook Notifications</div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Enabled</h4>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="webhook-enabled">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin: 10px 0;">
+                        <label class="form-label">Webhook URL</label>
+                        <input type="text" class="form-input" id="webhook-url"
+                            placeholder="https://discord.com/api/webhooks/...">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <button class="btn btn-secondary btn-sm" onclick="testWebhook()">
+                            <span>🔔</span> Send Test Webhook
+                        </button>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Status changes</h4>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="webhook-status">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Follower changes</h4>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="webhook-followers">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Errors</h4>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="webhook-errors">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Logging & Advanced Card -->
+                <div class="card">
+                    <div class="card-title">Logging & Advanced</div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Show seconds in check times</h4>
+                            <p>Applies to dashboard Last/Next Check (global + per-target)</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="dashboard-show-check-seconds">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>12-hour Time Format</h4>
+                            <p>Use AM/PM format instead of 24h</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="time-format-12h">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Output Logging</h4>
+                            <p>Enable logging to instagram_monitor.log</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="logging-enabled">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label class="form-label">CSV Filename</label>
+                        <input type="text" class="form-input" id="csv-filename" placeholder="test.csv">
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Verbose Mode</h4>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="verbose-mode">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Hours Verbose</h4>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="hours-verbose">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="padding: 8px 0;">
+                        <div class="setting-info">
+                            <h4>Debug Mode</h4>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="debug-mode">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Activity Page -->
+        <div id="page-activity" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Activity Log</h1>
+                <button class="btn btn-secondary" onclick="clearActivity()">
+                    <span>🗑️</span> Clear Log
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="activity-feed" id="activity-feed">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📜</div>
+                        <p>No activity yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Target Modal -->
+    <div class="modal-overlay" id="modal-add-target">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Target</h2>
+                <button class="modal-close" onclick="hideModal('add-target')">&times;</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Instagram Username</label>
+                <input type="text" class="form-input" id="new-target-username" placeholder="username"
+                    onkeypress="if(event.key==='Enter')addTarget()">
+            </div>
+
+            <div class="setting-row" style="border: none; padding-bottom: 0;">
+                <div class="setting-info">
+                    <h4>Start monitoring immediately</h4>
+                    <p>Begin monitoring after adding</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="start-immediately" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="hideModal('add-target')">Cancel</button>
+                <button class="btn btn-primary" onclick="addTarget()">
+                    <span>➕</span> Add Target
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Critical Error Modal -->
+    <div class="modal-overlay" id="error-modal" style="z-index: 9999; background: rgba(0,0,0,0.9);">
+        <div class="modal" style="border: 1px solid #dc3545; box-shadow: 0 4px 25px rgba(220, 53, 69, 0.5);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #a71d2a); color: white;">
+                <h2 class="modal-title">⚠️ Critical Error</h2>
+            </div>
+            <div class="modal-body">
+                <p style="color: #ff6b6b; font-weight: bold; margin-bottom: 16px; font-size: 16px;">
+                    The monitoring process has encountered a critical error.
+                </p>
+                <div id="error-traceback" style="
+                    background: #111;
+                    padding: 16px;
+                    border-radius: 8px;
+                    overflow: auto;
+                    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+                    font-size: 12px;
+                    color: #ff8787;
+                    border: 1px solid #444;
+                    max-height: 400px;
+                    white-space: pre-wrap;
+                    line-height: 1.4;">Waiting for error details...</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="location.reload()">Reload Page</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let targets = {};
+        let activities = [];
+        let settings = {};
+        let isMonitoring = false;
+        let currentUIMode = 'user'; // Default to user mode
+
+        // UI Mode handling
+        async function setUIMode(mode) {
+            if (mode !== 'user' && mode !== 'config') return;
+
+            try {
+                const response = await fetch('/api/mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentUIMode = mode;
+                    updateUIModeDisplay();
+                    showToast(`Switched to ${mode} mode`);
+                }
+            } catch (err) {
+                console.error('Failed to set UI mode:', err);
+                showToast('Failed to switch mode', 'error');
+            }
+        }
+
+        function updateUIModeDisplay() {
+            // Update button states
+            const userBtn = document.getElementById('mode-user-btn');
+            const configBtn = document.getElementById('mode-config-btn');
+
+            if (currentUIMode === 'user') {
+                userBtn.classList.add('btn-primary');
+                userBtn.classList.remove('btn-secondary');
+                configBtn.classList.remove('btn-primary');
+                configBtn.classList.add('btn-secondary');
+                document.getElementById('dashboard-user-mode').style.display = 'block';
+                document.getElementById('dashboard-config-mode').style.display = 'none';
+            } else {
+                configBtn.classList.add('btn-primary');
+                configBtn.classList.remove('btn-secondary');
+                userBtn.classList.remove('btn-primary');
+                userBtn.classList.add('btn-secondary');
+                document.getElementById('dashboard-user-mode').style.display = 'none';
+                document.getElementById('dashboard-config-mode').style.display = 'block';
+            }
+        }
+
+        // Navigation
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById(`page-${pageName}`).classList.add('active');
+            document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
+        }
+
+        // Modal
+        function showModal(modalId) {
+            document.getElementById(`modal-${modalId}`).classList.add('active');
+            // Focus on input
+            setTimeout(() => {
+                const input = document.getElementById('new-target-username');
+                if (input) input.focus();
+            }, 100);
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(`modal-${modalId}`).classList.remove('active');
+        }
+
+        // Close modal when clicking overlay (but not modal content)
+        const modalAddTarget = document.getElementById('modal-add-target');
+        if (modalAddTarget) {
+            modalAddTarget.addEventListener('click', function (e) {
+                if (e.target.id === 'modal-add-target') {
+                    hideModal('add-target');
+                }
+            });
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                const activeModal = document.querySelector('.modal-overlay.active');
+                if (activeModal) {
+                    const modalId = activeModal.id.replace('modal-', '');
+                    hideModal(modalId);
+                }
+            }
+        });
+
+        // Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.className = `toast show ${type}`;
+            document.getElementById('toast-message').textContent = message;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // API calls
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                console.log('API Response:', data);
+                console.log('Targets in response:', data.targets);
+                console.log('Targets count:', Object.keys(data.targets || {}).length);
+                updateDashboard(data);
+            } catch (err) {
+                console.error('Failed to fetch status:', err);
+                showToast('Failed to fetch status', 'error');
+            }
+        }
+
+        async function fetchSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                settings = await response.json();
+                populateSettings(settings);
+            } catch (err) {
+                console.error('Failed to fetch settings:', err);
+            }
+        }
+
+        let currentTargetSort = 'asc'; // 'asc', 'desc'
+        let dashboardData = null; // Store full data
+
+        function toggleTargetSort() {
+            if (currentTargetSort === 'asc') currentTargetSort = 'desc';
+            else currentTargetSort = 'asc';
+
+            updateSortIndicators();
+            if (dashboardData) {
+                renderTargetsTable(dashboardData.last_check, dashboardData.next_check);
+            }
+        }
+
+        function updateSortIndicators() {
+            const indicators = [
+                document.getElementById('sort-indicator-user'),
+                document.getElementById('sort-indicator-config'),
+                document.getElementById('sort-indicator-targets')
+            ];
+
+            indicators.forEach(ind => {
+                if (!ind) return;
+                ind.classList.remove('desc');
+                ind.style.opacity = '1';
+                ind.classList.add('active');
+                if (currentTargetSort === 'desc') {
+                    ind.classList.add('desc');
+                }
+            });
+        }
+
+        function getSortedTargets() {
+            const entries = Object.entries(targets);
+
+            return entries.sort((a, b) => {
+                const nameA = a[0].toLowerCase();
+                const nameB = b[0].toLowerCase();
+                if (currentTargetSort === 'asc') {
+                    return nameA.localeCompare(nameB);
+                } else {
+                    return nameB.localeCompare(nameA);
+                }
+            });
+        }
+
+        function updateDashboard(data) {
+            console.log('updateDashboard called with:', data);
+            dashboardData = data;
+            // Check for critical error FIRST
+            if (data.error) {
+                console.error('Dashboard error:', data.error);
+                const modal = document.getElementById('error-modal');
+                const trace = document.getElementById('error-traceback');
+
+                // Format timestamp
+                const date = new Date(data.error.timestamp * 1000).toLocaleString();
+
+                trace.innerHTML = `<strong>Error:</strong> ${escapeHtml(data.error.message)}<br><br>` +
+                    `<strong>Time:</strong> ${date}<br><br>` +
+                    `<strong>Traceback:</strong><br>${escapeHtml(data.error.traceback).replace(/\n/g, '<br>')}`;
+
+                modal.classList.add('active'); // Use existing modal activation
+                // Disable background interaction? No strict need, overlay covers it.
+                return; // Stop updating dashboard
+            }
+
+            // Update UI mode if changed
+            if (data.ui_mode && data.ui_mode !== currentUIMode) {
+                currentUIMode = data.ui_mode;
+                updateUIModeDisplay();
+            }
+
+            // Update stats
+            const targetCount = Object.keys(data.targets || {}).length;
+            const monitoringCount = Object.values(data.targets || {}).filter(t =>
+                t.status && t.status.toLowerCase() !== 'idle' && t.status.toLowerCase() !== 'stopped'
+            ).length;
+
+            document.getElementById('active-targets').textContent = targetCount;
+            document.getElementById('total-checks').textContent = data.check_count || 0;
+            document.getElementById('last-check').textContent = data.last_check || '-';
+            document.getElementById('next-check').textContent = data.next_check || '-';
+            document.getElementById('server-uptime').textContent = data.uptime || '-';
+
+            // Update status
+            const statusDot = document.getElementById('global-status-dot');
+            const statusText = document.getElementById('global-status-text');
+
+            if (data.is_monitoring || monitoringCount > 0) {
+                statusDot.className = 'status-dot';
+                statusText.textContent = `Monitoring (${monitoringCount})`;
+                isMonitoring = true;
+            } else {
+                statusDot.className = 'status-dot stopped';
+                statusText.textContent = 'Idle';
+                isMonitoring = false;
+            }
+
+            // Update targets table
+            targets = data.targets || {};
+            console.log('Setting targets to:', targets);
+            console.log('Targets keys:', Object.keys(targets));
+            renderTargetsTable(data.last_check, data.next_check);
+
+            // Render Last Fetched Card
+            renderLastFetched();
+
+            // Render Full Config Grid
+            if (data.config) {
+                renderFullConfig(data.config);
+            }
+
+            // Update session info
+            if (data.session) {
+                updateSessionDisplay(data.session);
+            }
+
+            // Update activities
+            if (data.activities) {
+                activities = data.activities;
+                renderActivities();
+                renderDashboardActivities();
+            }
+        }
+
+        let lastFetchedDataHash = '';
+
+        function renderLastFetched() {
+            const container = document.getElementById('last-fetched-container');
+            if (!container) return;
+
+            // Collect all updates from all targets
+            let allUpdates = [];
+            for (const [name, tData] of Object.entries(targets)) {
+                if (tData.fetched_updates) {
+                    allUpdates.push(...tData.fetched_updates);
+                } else {
+                    // Fallback for single legacy entries
+                    if (tData.last_post) {
+                        const p = { ...tData.last_post, user: name };
+                        allUpdates.push(p);
+                    }
+                    if (tData.last_story) {
+                        const s = { ...tData.last_story, user: name };
+                        allUpdates.push(s);
+                    }
+                }
+            }
+
+            // Deduplicate and sort by timestamp
+
+            // To maintain history across multiple targets, we sort by a mock date if timestamp is missing
+            allUpdates.sort((a, b) => {
+                const da = a.timestamp || '';
+                const db = b.timestamp || '';
+                return db.localeCompare(da); // Roughly newest first
+            });
+
+            // Flatten and deduplicate by post_url + url
+            const seen = new Set();
+            allUpdates = allUpdates.filter(u => {
+                const key = (u.post_url || '') + (u.url || '');
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+
+            const topUpdates = allUpdates.slice(0, 10); // Show last 10 in scrollable box
+
+            // Check if data actually changed to avoid flicker
+            const currentHash = JSON.stringify(topUpdates);
+            if (currentHash === lastFetchedDataHash) return;
+            lastFetchedDataHash = currentHash;
+
+            if (topUpdates.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>No posts, reels or stories fetched yet.</p>
+                    </div>
+                 `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="fetched-history">
+                    ${topUpdates.map(u => {
+                const caption = u.caption ? escapeHtml(u.caption) : '';
+                const hasThumbnail = u.url && u.url.length > 0;
+                const userPrefix = u.user ? `<span style="color: #888; margin-right: 4px;">[${escapeHtml(u.user)}]</span>` : '';
+
+                return `
+                        <div class="fetched-history-item">
+                            ${hasThumbnail ? `<img src="${u.url}" loading="lazy" alt="Thumbnail">` : `
+                                <div style="width: 80px; height: 80px; background: #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #444; font-size: 24px;">🖼️</div>
+                            `}
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                    <div style="font-weight: bold; color: #00bcd4;">${userPrefix}${escapeHtml(u.type || 'Update')}</div>
+                                    <div style="font-size: 11px; color: #666;">${escapeHtml(u.timestamp || '-')}</div>
+                                </div>
+                                <div style="font-size: 13px; margin-bottom: 8px; color: #e0e0e0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${caption}</div>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    ${u.post_url ? `<a href="${u.post_url}" target="_blank" ${u.is_story ? `onclick="confirmAnonymity(event, '${u.post_url}')"` : ''} style="font-size: 12px; color: #e94560; font-weight: 600; text-decoration: underline;">${u.is_story ? 'View Story' : 'View Post'}</a>` : ''}
+                                    ${u.video_url ? `
+                                        <a href="${u.video_url}" target="_blank" onclick="playVideo(event, '${u.video_url}')" style="font-size: 12px; color: #4ade80; text-decoration: underline; font-weight: 600;">Play Video</a>
+                                    ` : (u.url ? `<a href="${u.url}" target="_blank" style="font-size: 12px; color: #bbb; text-decoration: underline;">View Media</a>` : '')}
+                                </div>
+                            </div>
+                        </div>
+                        `;
+            }).join('')}
+                </div>
+            `;
+        }
+
+        function renderFullConfig(config) {
+            const grid = document.getElementById('full-config-grid');
+            if (!grid) return;
+
+            // Main configuration items
+            const items = [
+                { l: 'Session User', v: config.session_user },
+                { l: 'Polling Interval', v: config.check_interval_str },
+                { l: 'Hours Range', v: config.hours_range },
+                { l: 'Email Status', v: config.email_notifications ? 'Enabled' : 'Disabled' },
+                { l: 'Email Followers', v: config.follower_notifications ? 'Enabled' : 'Disabled' },
+                { l: 'Email Errors', v: config.error_notifications ? 'Enabled' : 'Disabled' },
+                { l: 'Session Mode', v: config.session_mode },
+                { l: 'Skip Session', v: config.skip_session_login },
+                { l: 'Skip Followers', v: config.skip_followers },
+                { l: 'Skip Followings', v: config.skip_followings },
+                { l: 'Skip Follow Changes', v: config.skip_follow_changes },
+                { l: 'Skip Stories Details', v: config.skip_stories },
+                { l: 'Skip Posts Details', v: config.skip_posts },
+                { l: 'Get More Posts Details', v: config.get_more_post_details },
+                { l: 'Follower Churn Detection', v: config.followers_churn },
+                { l: 'Show Check Seconds', v: config.dashboard_show_check_seconds },
+                { l: 'Hours Range', v: config.hours_range },
+                { l: 'Hours Verbose', v: config.hours_verbose },
+                { l: 'Jitter/Back-off', v: config.enable_jitter },
+                { l: 'Liveness', v: config.liveness_check },
+                { l: 'Profile Pic Detect', v: config.profile_pic_changes },
+                { l: 'Display Profile Pics', v: config.imgcat },
+                { l: 'Empty Pic Template', v: config.empty_profile_pic },
+                { l: 'Dashboard', v: config.dashboard_status },
+                { l: 'Web Dashboard', v: config.web_dashboard_status },
+                { l: 'CSV Logging', v: config.csv_logging },
+                { l: 'Output Logging', v: config.logging_enabled },
+                { l: 'Output Dir', v: (config.output_dir === '.' || !config.output_dir) ? '-' : config.output_dir },
+                { l: 'Templates', v: config.template_dir },
+                { l: 'Webhook', v: config.webhook_enabled },
+                { l: 'Webhook Status', v: config.webhook_status ? 'Enabled' : 'Disabled' },
+                { l: 'Webhook Followers', v: config.webhook_followers ? 'Enabled' : 'Disabled' },
+                { l: 'Webhook Errors', v: config.webhook_errors ? 'Enabled' : 'Disabled' },
+                { l: 'Verbose Mode', v: config.verbose_mode },
+                { l: 'Debug Mode', v: config.debug_mode },
+            ];
+
+            // Environment specific items
+            const envItems = [
+                { l: 'Browser User Agent', v: config.user_agent ? config.user_agent : '-' },
+                { l: 'Mobile User Agent', v: config.user_agent_mobile ? config.user_agent_mobile : '-' },
+                { l: 'Local Timezone', v: config.local_timezone },
+                { l: 'Config File', v: config.config_file },
+                { l: 'Dotenv File', v: config.dotenv_file },
+            ];
+
+            const renderItems = (itemList, targetGrid) => {
+                targetGrid.innerHTML = itemList.map(item => `
+                    <div class="setting-row" style="border: none; padding: 0;">
+                        <div class="setting-info">
+                            <h4 style="font-size: 12px; color: #888; text-transform: uppercase;">${escapeHtml(item.l)}</h4>
+                            <p style="font-size: 14px; color: #ddd; word-break: break-all;">${(() => {
+                        let val = item.v !== undefined && item.v !== null ? String(item.v) : '-';
+                        if (val === 'true') return 'True';
+                        if (val === 'false') return 'False';
+                        return escapeHtml(val);
+                    })()}</p>
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            renderItems(items, grid);
+
+            const envGrid = document.getElementById('env-details-grid');
+            if (envGrid) {
+                renderItems(envItems, envGrid);
+            }
+        }
+
+        function renderAllActivityFeeds() {
+            renderDashboardActivities();
+            renderActivities();
+        }
+
+        function renderDashboardActivities() {
+            const feed = document.getElementById('dashboard-activity');
+            const feedConfig = document.getElementById('dashboard-activity-config');
+            const filter = document.getElementById('log-filter').value;
+
+            const filteredActivities = activities.filter(a => filter === 'all' || (a.level || 'system') === filter);
+            const recentActivities = filteredActivities.slice(0, 10); // last 10 elements for dashboard
+
+            const html = recentActivities.length === 0 ? `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📜</div>
+                        <p>No activity matches filters</p>
+                    </div>
+                ` : recentActivities.map(a => {
+                const levelClass = a.level ? `log-${a.level}` : 'log-system';
+                let msgHtml = escapeHtml(a.message);
+                if (a.details && a.details.url) {
+                    const isStory = a.details.is_story === true;
+                    msgHtml += ` <a href="${a.details.url}" target="_blank" ${isStory ? `onclick="confirmAnonymity(event, '${a.details.url}')"` : ''} class="badge badge-success" style="text-decoration: none; margin-left: 8px;">View</a>`;
+                }
+                return `
+                <div class="activity-item ${levelClass}">
+                    <div class="activity-time">${a.time}</div>
+                    <div class="activity-message">${msgHtml}</div>
+                </div>
+                `;
+            }).join('');
+
+            if (feed) feed.innerHTML = html;
+            if (feedConfig) feedConfig.innerHTML = html;
+        }
+
+        function renderTargetsTable(globalLastCheck, globalNextCheck) {
+            console.log('renderTargetsTable called, targets:', targets);
+            const tbody = document.getElementById('dashboard-targets-body');
+            const tbodySimple = document.getElementById('dashboard-targets-simple-body');
+            const targetsList = document.getElementById('targets-list');
+            console.log('Found elements - tbody:', tbody, 'tbodySimple:', tbodySimple, 'targetsList:', targetsList);
+            const sortedEntries = getSortedTargets();
+            console.log('Sorted entries:', sortedEntries);
+
+            if (Object.keys(targets).length === 0) {
+                console.log('No targets found, showing empty state');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><p>No targets added yet.</p></div></td></tr>`;
+                if (tbodySimple) tbodySimple.innerHTML = `<tr><td colspan="9"><div class="empty-state"><p>No targets added yet.</p></div></td></tr>`;
+                if (targetsList) targetsList.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p>No targets configured</p></div></td></tr>`;
+                return;
+            }
+
+            const renderRow = ([name, data], isSimple = false, isTargetsList = false) => {
+                const statusVal = data.status || 'Idle';
+                const statusClass = getStatusBadge(statusVal);
+                const isPrivate = data.is_private;
+                const visibility = isPrivate === true ? 'PRI' : (isPrivate === false ? 'PUB' : '-');
+
+                let storyStr = "-";
+                if (data.has_story) {
+                    storyStr = data.stories_count > 0 ? `✨ ${data.stories_count}` : "✨ Yes";
+                } else if (data.has_story === false) {
+                    storyStr = "No";
+                }
+
+                if (isTargetsList) {
+                    return `
+                        <tr>
+                            <td>
+                                <div class="target-name">
+                                    <div class="target-avatar">${name.charAt(0).toUpperCase()}</div>
+                                    <span><a href="https://instagram.com/${encodeURIComponent(name)}" target="_blank" style="color: inherit; text-decoration: none;">${escapeHtml(name)}</a></span>
+                                </div>
+                            </td>
+                            <td>${data.added || '-'}</td>
+                            <td>${escapeHtml(data.last_checked || 'Never')}</td>
+                            <td>${escapeHtml(data.next_check || '-')}</td>
+                            <td><span class="badge badge-${statusClass}">${escapeHtml(statusVal)}</span></td>
+                            <td>
+                                <div class="target-actions">
+                                    <button class="btn btn-secondary btn-sm" onclick="triggerCheck('${escapeHtml(name)}')" title="Recheck">🔄</button>
+                                    <button class="btn btn-success btn-sm" onclick="startMonitoring('${escapeHtml(name)}')" title="Start">▶️</button>
+                                    <button class="btn btn-danger btn-sm" onclick="stopMonitoring('${escapeHtml(name)}')" title="Stop">⏹️</button>
+                                    <button class="btn btn-danger btn-sm" onclick="removeTarget('${escapeHtml(name)}')" title="Remove">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="target-name">
+                                <div class="target-avatar">${name.charAt(0).toUpperCase()}</div>
+                                <div>
+                                    <div><a href="https://instagram.com/${encodeURIComponent(name)}" target="_blank" style="color: inherit; text-decoration: none;">${escapeHtml(name)}</a></div>
+                                    <div style="font-size: 12px; color: #666;">@${escapeHtml(name)}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge ${isPrivate ? 'badge-warning' : 'badge-success'}" style="padding: 2px 6px; font-size: 10px;">${visibility}</span></td>
+                        <td class="text-right">${data.followers ?? '-'}</td>
+                        <td class="text-right">${data.following ?? '-'}</td>
+                        <td class="text-right">${data.posts ?? '-'}</td>
+                        <td class="text-right">${data.reels ?? '-'}</td>
+                        <td>${storyStr}</td>
+                        <td><span class="badge badge-${statusClass}">${escapeHtml(statusVal)}</span></td>
+                        ${!isSimple ? `
+                        <td>
+                            <div class="target-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="triggerCheck('${escapeHtml(name)}')" title="Recheck">🔄</button>
+                                <button class="btn btn-success btn-sm" onclick="startMonitoring('${escapeHtml(name)}')" title="Start">▶️</button>
+                                <button class="btn btn-danger btn-sm" onclick="stopMonitoring('${escapeHtml(name)}')" title="Stop">⏹️</button>
+                                <button class="btn btn-danger btn-sm" onclick="removeTarget('${escapeHtml(name)}')" title="Remove">🗑️</button>
+                            </div>
+                        </td>` : ''}
+                    </tr>
+                `;
+            };
+
+            if (tbodySimple) tbodySimple.innerHTML = sortedEntries.map(e => renderRow(e, true)).join('');
+            if (tbody) tbody.innerHTML = sortedEntries.map(e => renderRow(e, false)).join('');
+            if (targetsList) targetsList.innerHTML = sortedEntries.map(e => renderRow(e, false, true)).join('');
+        }
+
+        function getStatusBadge(status) {
+            if (!status) return 'idle';
+            status = status.toLowerCase();
+            if (status === 'ok' || status === 'monitoring' || status === 'running') return 'success';
+            if (status === 'checking' || status === 'starting' || status === 'pending') return 'warning';
+            if (status === 'error') return 'error';
+            return 'idle';
+        }
+
+        function renderActivities() {
+            const feed = document.getElementById('activity-feed');
+            const filter = document.getElementById('log-filter').value;
+
+            const filteredActivities = activities.filter(a => filter === 'all' || (a.level || 'system') === filter);
+
+            if (filteredActivities.length === 0) {
+                feed.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📜</div>
+                        <p>No activity matches filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            feed.innerHTML = filteredActivities.map(a => {
+                const levelClass = a.level ? `log-${a.level}` : 'log-system';
+                let msgHtml = escapeHtml(a.message);
+                if (a.details && a.details.url) {
+                    const isStory = a.details.is_story === true;
+                    msgHtml += ` <a href="${a.details.url}" target="_blank" ${isStory ? `onclick="confirmAnonymity(event, '${a.details.url}')"` : ''} class="badge badge-success" style="text-decoration: none; margin-left: 8px;">View</a>`;
+                }
+                return `
+                <div class="activity-item ${levelClass}">
+                    <div class="activity-time">${a.time}</div>
+                    <div class="activity-message">${msgHtml}</div>
+                </div>
+                `;
+            }).join('');
+        }
+
+
+
+        function populateSettings(s) {
+            document.getElementById('check-interval').value = s.check_interval || 5400;
+            document.getElementById('liveness-check-interval').value = s.liveness_check_interval || 0;
+            document.getElementById('random-low').value = s.random_low || 900;
+            document.getElementById('random-high').value = s.random_high || 180;
+
+            document.getElementById('email-notifications').checked = s.email_notifications || false;
+            document.getElementById('follower-notifications').checked = s.follower_notifications || false;
+            document.getElementById('error-notifications').checked = s.error_notifications || false;
+
+            document.getElementById('webhook-enabled').checked = s.webhook_enabled || false;
+            document.getElementById('webhook-url').value = s.webhook_url || '';
+            document.getElementById('webhook-status').checked = s.webhook_status || false;
+            document.getElementById('webhook-followers').checked = s.webhook_followers || false;
+            document.getElementById('webhook-errors').checked = s.webhook_errors || false;
+
+            document.getElementById('be-human').checked = s.be_human || false;
+            document.getElementById('skip-session-login').checked = s.skip_session_login || false;
+            document.getElementById('profile-pic-changes').checked = s.profile_pic_changes || false;
+            document.getElementById('skip-followers').checked = s.skip_followers || false;
+            document.getElementById('skip-followings').checked = s.skip_followings || false;
+            document.getElementById('skip-stories').checked = s.skip_stories || false;
+            document.getElementById('skip-posts').checked = s.skip_posts || false;
+            document.getElementById('get-more-post-details').checked = s.get_more_post_details || false;
+
+            document.getElementById('logging-enabled').checked = s.logging_enabled || false;
+            document.getElementById('followers-churn').checked = s.followers_churn || false;
+            document.getElementById('skip-follow-changes').checked = s.skip_follow_changes || false;
+            document.getElementById('csv-filename').value = s.csv_file || '';
+            document.getElementById('verbose-mode').checked = s.verbose_mode || false;
+            document.getElementById('hours-verbose').checked = s.hours_verbose || false;
+            document.getElementById('debug-mode').checked = s.debug_mode || false;
+            document.getElementById('dashboard-show-check-seconds').checked = (s.dashboard_show_check_seconds !== undefined) ? s.dashboard_show_check_seconds : true;
+            document.getElementById('time-format-12h').checked = (s.time_format_12h !== undefined) ? s.time_format_12h : false;
+
+            document.getElementById('check-posts-in-hours-range').checked = s.check_posts_in_hours_range || false;
+            document.getElementById('min-h1').value = s.min_h1 !== undefined ? s.min_h1 : 0;
+            document.getElementById('max-h1').value = s.max_h1 !== undefined ? s.max_h1 : 0;
+            document.getElementById('min-h2').value = s.min_h2 !== undefined ? s.min_h2 : 0;
+            document.getElementById('max-h2').value = s.max_h2 !== undefined ? s.max_h2 : 0;
+
+            document.getElementById('h1-enabled').checked = (s.min_h1 !== 0 || s.max_h1 !== 0);
+            document.getElementById('h2-enabled').checked = (s.min_h2 !== 0 || s.max_h2 !== 0);
+
+            if (s.session_username) {
+                const sessionUser = document.getElementById('session-username');
+                if (sessionUser) sessionUser.value = s.session_username;
+            }
+
+            document.getElementById('smtp-host').value = s.smtp_host || '';
+            document.getElementById('smtp-port').value = s.smtp_port || 587;
+            document.getElementById('smtp-user').value = s.smtp_user || '';
+            document.getElementById('smtp-ssl').checked = s.smtp_ssl || false;
+            document.getElementById('sender-email').value = s.sender_email || '';
+            document.getElementById('receiver-email').value = s.receiver_email || '';
+
+            const smtpPass = document.getElementById('smtp-password');
+            if (s.smtp_password_set) {
+                smtpPass.value = '********';
+                smtpPass.placeholder = '********';
+            } else {
+                smtpPass.value = '';
+                smtpPass.placeholder = '';
+            }
+        }
+
+        // Actions
+        async function addTarget() {
+            const username = document.getElementById('new-target-username').value.trim().toLowerCase();
+            const startNow = document.getElementById('start-immediately').checked;
+
+            if (!username) {
+                showToast('Please enter a username', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/targets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, start: startNow })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`Added target: ${username}`);
+                    hideModal('add-target');
+                    document.getElementById('new-target-username').value = '';
+                    fetchStatus();
+                } else {
+                    showToast(data.error || 'Failed to add target', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to add target', 'error');
+            }
+        }
+
+        async function removeTarget(username) {
+            if (!confirm(`Remove ${username} from monitoring?`)) return;
+
+            try {
+                const response = await fetch(`/api/targets/${username}`, { method: 'DELETE' });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`Removed target: ${username}`);
+                    fetchStatus();
+                } else {
+                    showToast(data.error || 'Failed to remove target', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to remove target', 'error');
+            }
+        }
+
+        async function startMonitoring(username) {
+            try {
+                const response = await fetch('/api/monitoring/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target: username })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`Started monitoring: ${username}`);
+                    fetchStatus();
+                } else {
+                    showToast(data.error || 'Failed to start monitoring', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to start monitoring', 'error');
+            }
+        }
+
+        async function stopMonitoring(username) {
+            try {
+                const response = await fetch('/api/monitoring/stop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target: username })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`Stopped monitoring: ${username}`);
+                    fetchStatus();
+                } else {
+                    showToast(data.error || 'Failed to stop monitoring', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to stop monitoring', 'error');
+            }
+        }
+
+        async function startAllMonitoring() {
+            try {
+                const response = await fetch('/api/monitoring/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Started all monitoring');
+                    fetchStatus();
+                } else {
+                    showToast(data.error || 'Failed to start monitoring', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to start monitoring', 'error');
+            }
+        }
+
+        async function stopAllMonitoring() {
+            try {
+                const response = await fetch('/api/monitoring/stop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Stopped all monitoring');
+                    fetchStatus();
+                } else {
+                    showToast(data.error || 'Failed to stop monitoring', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to stop monitoring', 'error');
+            }
+        }
+
+        async function triggerCheck(username) {
+            try {
+                const response = await fetch('/api/trigger-check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target: username })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message || (username ? `Recheck triggered for ${username}` : 'Recheck all triggered'));
+                } else {
+                    showToast(data.message || 'Failed to trigger check', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to trigger check', 'error');
+            }
+        }
+
+        function getSettingsFromForm() {
+            return {
+                check_interval: parseInt(document.getElementById('check-interval').value),
+                liveness_check_interval: parseInt(document.getElementById('liveness-check-interval').value),
+                random_low: parseInt(document.getElementById('random-low').value),
+                random_high: parseInt(document.getElementById('random-high').value),
+
+                email_notifications: document.getElementById('email-notifications').checked,
+                follower_notifications: document.getElementById('follower-notifications').checked,
+                error_notifications: document.getElementById('error-notifications').checked,
+
+                webhook_enabled: document.getElementById('webhook-enabled').checked,
+                webhook_url: document.getElementById('webhook-url').value,
+                webhook_status: document.getElementById('webhook-status').checked,
+                webhook_followers: document.getElementById('webhook-followers').checked,
+                webhook_errors: document.getElementById('webhook-errors').checked,
+
+                be_human: document.getElementById('be-human').checked,
+                skip_session_login: document.getElementById('skip-session-login').checked,
+                profile_pic_changes: document.getElementById('profile-pic-changes').checked,
+                skip_followers: document.getElementById('skip-followers').checked,
+                skip_followings: document.getElementById('skip-followings').checked,
+                skip_stories: document.getElementById('skip-stories').checked,
+                skip_posts: document.getElementById('skip-posts').checked,
+                get_more_post_details: document.getElementById('get-more-post-details').checked,
+
+                logging_enabled: document.getElementById('logging-enabled').checked,
+                followers_churn: document.getElementById('followers-churn').checked,
+                skip_follow_changes: document.getElementById('skip-follow-changes').checked,
+                csv_filename: document.getElementById('csv-filename').value,
+                verbose_mode: document.getElementById('verbose-mode').checked,
+                hours_verbose: document.getElementById('hours-verbose').checked,
+                debug_mode: document.getElementById('debug-mode').checked,
+                dashboard_show_check_seconds: document.getElementById('dashboard-show-check-seconds').checked,
+                time_format_12h: document.getElementById('time-format-12h').checked,
+
+                check_posts_in_hours_range: document.getElementById('check-posts-in-hours-range').checked,
+                min_h1: document.getElementById('h1-enabled').checked ? parseInt(document.getElementById('min-h1').value) : 0,
+                max_h1: document.getElementById('h1-enabled').checked ? parseInt(document.getElementById('max-h1').value) : 0,
+                min_h2: document.getElementById('h2-enabled').checked ? parseInt(document.getElementById('min-h2').value) : 0,
+                max_h2: document.getElementById('h2-enabled').checked ? parseInt(document.getElementById('max-h2').value) : 0,
+
+                smtp_host: document.getElementById('smtp-host').value,
+                smtp_port: parseInt(document.getElementById('smtp-port').value) || 0,
+                smtp_user: document.getElementById('smtp-user').value,
+                smtp_password: document.getElementById('smtp-password').value,
+                smtp_ssl: document.getElementById('smtp-ssl').checked,
+                sender_email: document.getElementById('sender-email').value,
+                receiver_email: document.getElementById('receiver-email').value
+            };
+        }
+
+        async function saveSettings() {
+            const newSettings = getSettingsFromForm();
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newSettings)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    if (data.changes && data.changes.length > 0) {
+                        const hasLimit = data.changes.some(c => c.includes('(min 300s limit)'));
+                        if (hasLimit) {
+                            showToast('Settings saved (some values capped to limits)', 'warning');
+                        } else {
+                            showToast('Settings saved');
+                        }
+                    } else {
+                        showToast('Settings saved');
+                    }
+                    // Refresh values from backend to reflect any server-side adjustments (like limits)
+                    fetchSettings();
+                } else {
+                    showToast(data.error || 'Failed to save settings', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to save settings', 'error');
+            }
+        }
+
+        async function generateConfig() {
+            const defaultFilename = 'instagram_monitor.conf';
+            const filename = prompt('Config filename (will be created in the current working directory):', defaultFilename);
+            if (!filename) return;
+
+            const settings = getSettingsFromForm();
+
+            try {
+                showToast('Generating config...');
+                const response = await fetch('/api/generate-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename, settings })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`Config generated: ${data.filename}`);
+                    // Refresh values from backend to reflect any server-side adjustments (like limits)
+                    fetchSettings();
+                } else {
+                    showToast(data.error || 'Failed to generate config', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to generate config', 'error');
+            }
+        }
+
+        async function testEmail() {
+            try {
+                showToast('Sending test email...');
+                const response = await fetch('/api/test-email', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Test email sent successfully');
+                } else {
+                    showToast(data.error || 'Failed to send test email', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to send test email', 'error');
+            }
+        }
+
+        async function testWebhook() {
+            try {
+                showToast('Sending test webhook...');
+                const response = await fetch('/api/test-webhook', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Test webhook sent successfully');
+                } else {
+                    showToast(data.error || 'Failed to send test webhook', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to send test webhook', 'error');
+            }
+        }
+
+        async function configureSession() {
+            const username = document.getElementById('session-username').value.trim();
+            const method = 'saved'; // Default method when manually setting username
+
+            if (!username) {
+                showToast('Please enter a username', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, method })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Session configured');
+                    fetchStatus();
+                    fetchSessionDetails();
+                } else {
+                    showToast(data.error || 'Failed to configure session', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to configure session', 'error');
+            }
+        }
+
+        async function detectFirefoxProfiles() {
+            try {
+                showToast('Searching for Firefox profiles...');
+                const response = await fetch('/api/session/firefox/profiles');
+                const data = await response.json();
+                if (data.success && data.profiles.length > 0) {
+                    const select = document.getElementById('firefox-profile-select');
+                    select.innerHTML = data.profiles.map(p => `<option value="${escapeHtml(p.path)}">${escapeHtml(p.name)}</option>`).join('');
+                    document.getElementById('firefox-profiles-container').style.display = 'block';
+                    showToast(`Found ${data.profiles.length} profiles`);
+                } else {
+                    showToast('No Firefox profiles found', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to detect profiles', 'error');
+            }
+        }
+
+        async function importFirefoxSession() {
+            const path = document.getElementById('firefox-profile-select').value;
+            if (!path) return;
+
+            try {
+                showToast('Importing session from Firefox...');
+                const response = await fetch('/api/session/firefox/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`Imported session for ${data.username}`);
+                    fetchStatus();
+                    fetchSessionDetails();
+                } else {
+                    showToast(data.error || 'Failed to import session', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to import session', 'error');
+            }
+        }
+
+        async function testSession() {
+            try {
+                showToast('Testing session...');
+                const response = await fetch('/api/session/test', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`Session valid: ${escapeHtml(data.username)}`);
+                    fetchStatus();
+                    // Also fetch detailed session info
+                    fetchSessionDetails();
+                } else {
+                    showToast(data.error || 'Session test failed', 'error');
+                }
+            } catch (err) {
+                showToast('Session test failed', 'error');
+            }
+        }
+
+        async function refreshSession() {
+            if (!confirm('Refresh session? This will reload the session file and re-authenticate if needed.')) {
+                return;
+            }
+            try {
+                showToast('Refreshing session...');
+                const response = await fetch('/api/session/refresh', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message || 'Session refreshed successfully');
+                    fetchStatus();
+                    fetchSessionDetails();
+                } else {
+                    showToast(data.error || 'Session refresh failed', 'error');
+                }
+            } catch (err) {
+                showToast('Session refresh failed', 'error');
+            }
+        }
+
+        async function clearSession() {
+            if (!confirm('Clear session? This will remove the session configuration and delete the session file. You will need to reconfigure the session.')) {
+                return;
+            }
+            try {
+                showToast('Clearing session...');
+                const response = await fetch('/api/session/clear', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message || 'Session cleared');
+                    fetchStatus();
+                    fetchSessionDetails();
+                    // Clear form
+                    document.getElementById('session-username').value = '';
+                } else {
+                    showToast(data.error || 'Session clear failed', 'error');
+                }
+            } catch (err) {
+                showToast('Session clear failed', 'error');
+            }
+        }
+
+        async function fetchSessionDetails() {
+            try {
+                const response = await fetch('/api/session');
+                const sessionData = await response.json();
+                updateSessionDisplay(sessionData);
+            } catch (err) {
+                console.error('Failed to fetch session details:', err);
+            }
+        }
+
+        let cachedSessionData = null;
+
+        function updateSessionDisplay(sessionData) {
+            const statusText = document.getElementById('session-status-text');
+            const badge = document.getElementById('session-badge');
+            const detailsContainer = document.getElementById('session-details');
+            const refreshBtn = document.getElementById('refresh-session-btn');
+            const clearBtn = document.getElementById('clear-session-btn');
+            const modeIndicator = document.getElementById('session-mode-indicator');
+
+            // Resilience against shallow heartbeat updates
+            if (cachedSessionData && !sessionData.file_path && sessionData.username === cachedSessionData.username) {
+                sessionData = { ...cachedSessionData, ...sessionData };
+            }
+            cachedSessionData = sessionData;
+
+            if (sessionData.username) {
+                statusText.textContent = `Configured for: ${escapeHtml(sessionData.username)}`;
+                badge.className = `badge ${sessionData.active ? 'badge-success' : 'badge-warning'}`;
+                badge.textContent = sessionData.active ? 'Active' : 'Inactive';
+
+                modeIndicator.className = 'badge badge-success';
+                modeIndicator.textContent = 'Mode 2: Logged In';
+
+                // Show details
+                detailsContainer.style.display = 'block';
+                document.getElementById('session-detail-username').textContent = escapeHtml(sessionData.username);
+                document.getElementById('session-detail-file').textContent = sessionData.file_path ?
+                    escapeHtml(sessionData.file_path) : 'Not found';
+                document.getElementById('session-detail-size').textContent = sessionData.file_size_human || '-';
+                document.getElementById('session-detail-modified').textContent = sessionData.last_modified_relative ?
+                    `${escapeHtml(sessionData.last_modified)} (${escapeHtml(sessionData.last_modified_relative)} ago)` :
+                    (sessionData.file_exists ? 'Unknown' : 'N/A');
+                document.getElementById('session-detail-method').textContent = sessionData.method ?
+                    (sessionData.method === 'firefox' ? 'Firefox Import' : 'Manual Setup') : '-';
+                document.getElementById('session-detail-tested').textContent = sessionData.last_tested || 'Never';
+
+                // Show action buttons
+                refreshBtn.style.display = 'inline-flex';
+                clearBtn.style.display = 'inline-flex';
+
+                // Update username field
+                document.getElementById('session-username').value = sessionData.username;
+            } else {
+                statusText.textContent = 'Not configured';
+                badge.className = 'badge badge-idle';
+                badge.textContent = 'Inactive';
+
+                modeIndicator.className = 'badge badge-idle';
+                modeIndicator.textContent = 'Mode 1: Anonymous';
+
+                // Hide details
+                detailsContainer.style.display = 'none';
+                refreshBtn.style.display = 'none';
+                clearBtn.style.display = 'none';
+            }
+        }
+
+        async function clearActivity() {
+            activities = [];
+            renderActivities();
+            renderDashboardActivities();
+            await fetch('/api/activity/clear', { method: 'POST' });
+            showToast('Activity log cleared');
+        }
+
+        // HTML escaping function to prevent XSS
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function confirmAnonymity(event, url) {
+            if (event) event.preventDefault();
+            const modal = document.getElementById('modal-anonymity');
+            const confirmLink = document.getElementById('anonymity-confirm-link');
+            confirmLink.href = url;
+            modal.classList.add('active');
+        }
+
+        function playVideo(event, videoUrl) {
+            if (event) event.preventDefault();
+            const modal = document.getElementById('modal-video-player');
+            const video = document.getElementById('local-video-element');
+            video.src = videoUrl;
+            modal.classList.add('active');
+            video.load();
+            video.play();
+        }
+
+        const modalAnonymity = document.getElementById('modal-anonymity');
+        if (modalAnonymity) {
+            modalAnonymity.addEventListener('click', function (e) {
+                if (e.target.id === 'modal-anonymity') {
+                    hideModal('anonymity');
+                }
+            });
+        }
+
+        const modalVideoPlayer = document.getElementById('modal-video-player');
+        if (modalVideoPlayer) {
+            modalVideoPlayer.addEventListener('click', function (e) {
+                if (e.target.id === 'modal-video-player') {
+                    const video = document.getElementById('local-video-element');
+                    if (video) {
+                        video.pause();
+                    }
+                    hideModal('video-player');
+                }
+            });
+        }
+
+        // Initial load and polling
+        (async () => {
+            await fetchStatus();
+            updateUIModeDisplay();
+            fetchSessionDetails();
+        })();
+        fetchSettings();
+        setInterval(fetchStatus, 5000);
+        // Also fetch session details periodically (less frequently)
+        setInterval(fetchSessionDetails, 30000); // Every 30 seconds
+    </script>
+    <!-- Anonymity Confirmation Modal -->
+    <div id="modal-anonymity" class="modal-overlay">
+        <div class="modal" style="border-top: 4px solid #fbbf24;">
+            <div class="modal-header">
+                <h2 class="modal-title">⚠️ Anonymity Warning</h2>
+                <button class="modal-close" onclick="hideModal('anonymity')">&times;</button>
+            </div>
+            <p style="margin-bottom: 24px; line-height: 1.6; color: #ccc;">
+                You are about to visit Instagram directly.
+                <br><br>
+                <b>Warning:</b> This identifies you to the user as having viewed their content.
+                <br><br>
+                To stay anonymous, use the <b>"View Media"</b> or <b>"Play Video"</b> link instead, as it uses locally
+                downloaded content.
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="hideModal('anonymity')">Cancel</button>
+                <a id="anonymity-confirm-link" href="#" target="_blank" class="btn btn-danger"
+                    onclick="hideModal('anonymity')">I Understand, Proceed</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div id="modal-video-player" class="modal-overlay">
+        <div class="modal"
+            style="max-width: 800px; padding: 0; background: black; overflow: hidden; border: 1px solid rgba(255,255,255,0.2);">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #1a1a2e;">
+                <h2 class="modal-title" style="font-size: 16px;">🎬 Local Playback</h2>
+                <button class="modal-close"
+                    onclick="const vid = document.getElementById('local-video-element'); vid.pause(); hideModal('video-player')">&times;</button>
+            </div>
+            <div
+                style="width: 100%; aspect-ratio: 16 / 9; background: #000; display: flex; align-items: center; justify-content: center;">
+                <video id="local-video-element" controls style="max-width: 100%; max-height: calc(90vh - 50px);">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,152 @@
+# ╔════════════════════════════════════════════════════════════╗
+# ║              CORAL - Central Configuration                 ║
+# ╚════════════════════════════════════════════════════════════╝
+# 
+# CORAL: Centralised OSINT Repository and Automation Layer
+# 
+# This is the master configuration file for all OSINT monitoring services.
+# All services read from this file for consistent configuration.
+#
+# IMPORTANT: Monitors will auto-detect CORAL availability!
+# - If CORAL is running, monitors will send webhooks automatically
+# - If CORAL is not available, monitors run in standalone mode
+# - No need to change config when switching between modes
+#
+# After changing settings:
+#   1. Update database: cd coral && python3 update_config.py
+#   2. Restart services: ./start_all.sh
+
+# ============================================================
+# CORAL (Main Dashboard)
+# ============================================================
+coral:
+  enabled: true                         # Set to false to disable CORAL entirely
+  port: 5002                            # Web UI port
+  host: "0.0.0.0"                       # Listen on all interfaces
+  debug: false                          # Enable debug mode
+  database: "coral/coral.db"            # Database file path
+  webhook_secret: ""                    # Optional: validate webhooks from monitors
+
+# ============================================================
+# INSTAGRAM MONITOR
+# ============================================================
+instagram:
+  enabled: true                         # Enable/disable this monitor
+  standalone: false                     # Force standalone (ignores CORAL detection)
+  port: 8000                            # Trigger API port
+  check_interval: 300                   # Check every 5 minutes (seconds)
+  webhook:
+    enabled: true                       # Set false to force standalone mode
+    url: "http://localhost:5002/api/webhook/instagram"
+    secret: ""                          # Must match coral webhook_secret if set
+  api:
+    # Add Instagram API credentials here if needed
+    username: ""
+    password: ""
+
+# ============================================================
+# PINTEREST MONITOR  
+# ============================================================
+pinterest:
+  enabled: true
+  standalone: false                     # Force standalone (ignores CORAL detection)
+  port: 5001                            # Pinterest monitor port
+  check_interval: 300                   # Check every 5 minutes (seconds)
+  webhook:
+    enabled: true                       # Set false to force standalone mode
+    url: "http://localhost:5002/api/webhook/pinterest"
+    secret: ""
+  api:
+    # Add Pinterest API credentials here if needed
+    api_key: ""
+
+# ============================================================
+# SPOTIFY MONITOR
+# ============================================================
+spotify:
+  enabled: true
+  standalone: false                     # Force standalone (ignores CORAL detection)
+  port: 8001                            # Trigger API port
+  check_interval: 300                   # Check every 5 minutes (seconds)
+  webhook:
+    enabled: true                       # Set false to force standalone mode
+    url: "http://localhost:5002/api/webhook/spotify"
+    secret: ""
+  api:
+    # Add Spotify API credentials here if needed
+    client_id: ""
+    client_secret: ""
+
+# ============================================================
+# AUTO-DETECTION BEHAVIOR
+# ============================================================
+# Monitors automatically detect if CORAL is available:
+#
+# 1. CORAL running + webhook.enabled: true
+#    → Monitor sends events to CORAL (INTEGRATED mode)
+#
+# 2. CORAL not running + webhook.enabled: true
+#    → Monitor runs standalone automatically (STANDALONE mode)
+#
+# 3. webhook.enabled: false or standalone: true
+#    → Monitor always runs standalone (ignores CORAL)
+#
+# The detection is fast (<500ms) and happens at startup.
+
+# ============================================================
+# NOTIFICATION SETTINGS (Future Feature)
+# ============================================================
+notifications:
+  enabled: false
+  # Configure notification channels
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    from_email: ""
+    to_emails: []
+  
+  slack:
+    enabled: false
+    webhook_url: ""
+  
+  discord:
+    enabled: false
+    webhook_url: ""
+
+# ============================================================
+# LOGGING
+# ============================================================
+logging:
+  level: "INFO"                         # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  file: "logs/coral.log"
+  max_size_mb: 100
+  backup_count: 5
+
+# ============================================================
+# ADVANCED SETTINGS
+# ============================================================
+advanced:
+  # CORAL detection
+  coral_check:
+    timeout: 0.5                        # Fast check timeout (seconds)
+    enabled: true                       # Set false to skip auto-detection
+  
+  # Rate limiting for trigger endpoints
+  rate_limit:
+    enabled: true
+    max_requests: 10                    # Max requests per window
+    window_seconds: 60                  # Time window in seconds
+  
+  # Data retention
+  retention:
+    events_days: 90                     # Keep events for 90 days
+    cleanup_enabled: true
+    cleanup_hour: 3                     # Run cleanup at 3 AM
+  
+  # Database backups
+  database:
+    backup_enabled: true
+    backup_interval_hours: 24
+    backup_directory: "backups/"
+

@@ -1,0 +1,9 @@
+instaloader
+requests
+python-dateutil
+pytz
+tzlocal
+python-dotenv
+tqdm
+rich
+flask
