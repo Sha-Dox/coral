@@ -15,6 +15,8 @@
 ## Quick Start
 
 ```bash
+git clone https://github.com/Sha-Dox/coral.git    # Clone the repo
+cd coral                          # cd into the directory
 ./start_all.sh                    # Start everything
 ./start_monitor.sh instagram      # Start one monitor
 ./start_monitors_only.sh          # All monitors, no hub
