@@ -71,7 +71,7 @@ cd ..
 ./start_monitor.sh twitter  # Test standalone
 ```
 
-See [AI_AGENT_INTEGRATION.md](AI_AGENT_INTEGRATION.md) for detailed AI-assisted integration guide.
+See [AI_AGENT_INTEGRATION.md](../integration/AI_AGENT_INTEGRATION.md) for detailed AI-assisted integration guide.
 
 ## 🧪 Testing
 
@@ -202,9 +202,9 @@ Before committing:
 
 ## ❓ Questions?
 
-- Check [README.md](README.md)
-- Review [STANDALONE_USAGE.md](STANDALONE_USAGE.md)
-- See [AI_AGENT_INTEGRATION.md](AI_AGENT_INTEGRATION.md)
+- Check [README.md](../../README.md)
+- Review [STANDALONE_USAGE.md](../guides/STANDALONE_USAGE.md)
+- See [AI_AGENT_INTEGRATION.md](../integration/AI_AGENT_INTEGRATION.md)
 - Open an issue on GitHub
 - Check existing issues/discussions
 
@@ -214,4 +214,4 @@ By contributing, you agree your contributions will be licensed under the MIT Lic
 
 ---
 
-**Need help integrating?** See AI_AGENT_INTEGRATION.md for detailed prompts!
+**Need help integrating?** See [AI_AGENT_INTEGRATION.md](../integration/AI_AGENT_INTEGRATION.md) for detailed prompts!

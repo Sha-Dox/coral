@@ -34,7 +34,7 @@ cd coral
 ./start_all.sh
 ```
 
-See [README.md](README.md) for detailed instructions.
+See [README.md](../../README.md) for detailed instructions.
 
 ### Can I run it in Docker?
 
@@ -209,7 +209,7 @@ git pull
 
 ### Is there an API?
 
-Yes! See [API.md](API.md) for complete documentation.
+Yes! See [API.md](../api/API.md) for complete documentation.
 
 ### Can I run multiple instances?
 
@@ -229,7 +229,7 @@ Yes, but they'll need separate databases and ports. Easier to just run one insta
 
 1. Check monitors are running: `ps aux | grep monitor`
 2. Verify webhook URLs in config.yaml
-3. Test manually: See [API.md](API.md)
+3. Test manually: See [API.md](../api/API.md)
 
 ### High CPU/memory usage
 
@@ -247,7 +247,7 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed solutions.
 
 ### Can I contribute?
 
-Yes! Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Yes! Contributions are welcome. See [CONTRIBUTING.md](../contributing/CONTRIBUTING.md).
 
 ### How do I report bugs?
 

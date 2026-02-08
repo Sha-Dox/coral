@@ -196,7 +196,7 @@ CORAL works with any OSINT tool. Here are some examples:
 - [Spotify Monitor](https://github.com/YOUR_USERNAME/spotify_monitor) - Track Spotify activity
 ```
 
-### AI_AGENT_INTEGRATION.md
+### docs/integration/AI_AGENT_INTEGRATION.md
 Update the repository links in example prompts.
 
 ---

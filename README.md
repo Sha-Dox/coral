@@ -41,7 +41,7 @@ Open http://localhost:5002 for the unified dashboard.
 - `spotify_monitor/` - Spotify monitor (standalone)
 - `config.yaml` - Central configuration
 - `start_*.sh` - Run scripts
-- `API.md`, `FAQ.md`, `TROUBLESHOOTING.md`, `DEPLOYMENT.md` - Docs
+- `docs/` - Documentation (API, guides, contributing, integration)
 
 ## Installation
 
@@ -289,7 +289,7 @@ kill 12345  # Replace with actual PID
 
 ## 🔌 Integrate Your Own Tool
 
-See [AI_AGENT_INTEGRATION.md](AI_AGENT_INTEGRATION.md) for detailed guide on integrating new platforms using AI assistants.
+See [docs/integration/AI_AGENT_INTEGRATION.md](docs/integration/AI_AGENT_INTEGRATION.md) for detailed guide on integrating new platforms using AI assistants.
 
 Quick integration:
 ```python
@@ -316,9 +316,9 @@ notifier.send_event(
 
 ## 📚 Documentation
 
-- **[STANDALONE_USAGE.md](STANDALONE_USAGE.md)** - Run monitors independently
-- **[AI_AGENT_INTEGRATION.md](AI_AGENT_INTEGRATION.md)** - Integrate new platforms
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guide
+- **[docs/guides/STANDALONE_USAGE.md](docs/guides/STANDALONE_USAGE.md)** - Run monitors independently
+- **[docs/integration/AI_AGENT_INTEGRATION.md](docs/integration/AI_AGENT_INTEGRATION.md)** - Integrate new platforms
+- **[docs/contributing/CONTRIBUTING.md](docs/contributing/CONTRIBUTING.md)** - Contribution guide
 - **LICENSE** - MIT License
 
 ## Key Benefits
@@ -335,7 +335,7 @@ MIT License - See [LICENSE](LICENSE)
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [docs/contributing/CONTRIBUTING.md](docs/contributing/CONTRIBUTING.md) for guidelines.
 
 ---
 
