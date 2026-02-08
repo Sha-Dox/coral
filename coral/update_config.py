@@ -16,7 +16,7 @@ from pathlib import Path
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from config_loader import config, get_trigger_urls
+from config_loader import config, get_trigger_urls  # noqa: E402
 
 
 def update_database():
@@ -46,6 +46,9 @@ def update_database():
 
     try:
         for platform, url in trigger_urls.items():
+            if not url:
+                print(f"⚠ {platform.capitalize()} trigger URL not configured, skipping")
+                continue
             # Check if platform exists
             cursor.execute("SELECT id, name FROM platforms WHERE name = ?", (platform,))
             result = cursor.fetchone()

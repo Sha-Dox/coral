@@ -26,11 +26,11 @@ COPY logos/ /app/logos/
 RUN mkdir -p /app/data
 
 # Expose port
-EXPOSE 3333
+EXPOSE 3456
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:3333/api/health', timeout=2)" || exit 1
+    CMD python -c "import requests; requests.get('http://localhost:3456/api/health', timeout=2)" || exit 1
 
 # Run application
 WORKDIR /app/coral

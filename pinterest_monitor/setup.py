@@ -13,7 +13,7 @@ setup(
     description="Real-time OSINT monitoring tool for Pinterest boards and user activity",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Sha-Dox/pinterest-monitor",
+    url="https://github.com/Sha-Dox/coral",
     packages=find_packages(),
     py_modules=["app", "config", "database", "monitor", "scheduler", "reset_db"],
     classifiers=[

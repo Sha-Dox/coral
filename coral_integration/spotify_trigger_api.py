@@ -3,7 +3,7 @@
 Spotify Monitor Trigger Wrapper
 Provides a simple API endpoint for OSINT Hub to trigger checks
 """
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 import subprocess
 import os
 import logging

@@ -7,16 +7,16 @@
 **Error: Port already in use**
 ```
 Address already in use
-Port 3333 is in use
+Port 3456 is in use
 ```
 
 **Solution:**
 ```bash
 # Find process using port
-lsof -ti:3333
+lsof -ti:3456
 
 # Kill the process
-kill $(lsof -ti:3333)
+kill $(lsof -ti:3456)
 
 # Or change port in config.yaml
 ```
@@ -49,7 +49,7 @@ rm coral/coral.db-journal
 **Check:**
 1. Is CORAL running?
    ```bash
-   curl http://localhost:3333/api/health
+   curl http://localhost:3456/api/health
    ```
 
 2. Check monitor logs:
@@ -61,12 +61,12 @@ rm coral/coral.db-journal
    ```yaml
    instagram:
      webhook:
-       url: "http://localhost:3333/api/webhook/instagram"
+       url: "http://localhost:3456/api/webhook/instagram"
    ```
 
 4. Test webhook manually:
    ```bash
-   curl -X POST http://localhost:3333/api/webhook/instagram \
+   curl -X POST http://localhost:3456/api/webhook/instagram \
      -H "Content-Type: application/json" \
      -d '{"username":"test","event_type":"test","summary":"Test event"}'
    ```
@@ -146,7 +146,7 @@ sqlite3 coral/coral.db "DELETE FROM events WHERE created_at < datetime('now', '-
 
 1. Check if service is running:
    ```bash
-   curl http://localhost:3333/api/health
+   curl http://localhost:3456/api/health
    ```
 
 2. Check firewall:
@@ -155,7 +155,7 @@ sqlite3 coral/coral.db "DELETE FROM events WHERE created_at < datetime('now', '-
    sudo ufw status
    
    # Allow port
-   sudo ufw allow 3333
+   sudo ufw allow 3456
    ```
 
 3. Check if binding to correct interface:
@@ -216,12 +216,12 @@ docker-compose logs -f
 cd coral && python3 -c "import database; print(database.get_all_platforms())"
 
 # Test webhook
-curl -X POST http://localhost:3333/api/webhook/test \
+curl -X POST http://localhost:3456/api/webhook/test \
   -H "Content-Type: application/json" \
   -d '{"username":"test","event_type":"test","summary":"Test"}'
 
 # Test health
-curl http://localhost:3333/api/health
+curl http://localhost:3456/api/health
 ```
 
 ### Check Configuration

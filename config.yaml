@@ -13,8 +13,8 @@
 # - No need to change config when switching between modes
 #
 # After changing settings:
-#   1. Update database: cd coral && python3 update_config.py
-#   2. Restart services: ./start_all.sh
+#   1. Restart services: ./start_all.sh
+#   2. CORAL syncs platform trigger URLs on startup
 
 # ============================================================
 # CORAL (Main Dashboard)
@@ -33,11 +33,11 @@ coral:
 instagram:
   enabled: true                         # Enable/disable this monitor
   standalone: false                     # Force standalone (ignores CORAL detection)
-  port: 8000                            # Trigger API port
+  port: 8000                            # Web dashboard/API port
   check_interval: 300                   # Check every 5 minutes (seconds)
   webhook:
     enabled: true                       # Set false to force standalone mode
-    url: "http://localhost:3333/api/webhook/instagram"
+    url: "http://localhost:3456/api/webhook/instagram"
     secret: ""                          # Must match coral webhook_secret if set
   api:
     # Add Instagram API credentials here if needed
@@ -54,7 +54,7 @@ pinterest:
   check_interval: 300                   # Check every 5 minutes (seconds)
   webhook:
     enabled: true                       # Set false to force standalone mode
-    url: "http://localhost:3333/api/webhook/pinterest"
+    url: "http://localhost:3456/api/webhook/pinterest"
     secret: ""
   api:
     # Add Pinterest API credentials here if needed
@@ -66,11 +66,11 @@ pinterest:
 spotify:
   enabled: true
   standalone: false                     # Force standalone (ignores CORAL detection)
-  port: 8001                            # Trigger API port
+  port: 8001                            # Trigger API port (optional)
   check_interval: 300                   # Check every 5 minutes (seconds)
   webhook:
     enabled: true                       # Set false to force standalone mode
-    url: "http://localhost:3333/api/webhook/spotify"
+    url: "http://localhost:3456/api/webhook/spotify"
     secret: ""
   api:
     # Add Spotify API credentials here if needed

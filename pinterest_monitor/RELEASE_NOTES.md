@@ -20,14 +20,9 @@ First public release of Pinterest Monitor - a real-time OSINT monitoring tool fo
 Multiple installation methods supported:
 
 ```bash
-# Quick install from GitHub
-pip install git+https://github.com/Sha-Dox/pinterest-monitor.git
-
-# Or download and install
-wget https://github.com/Sha-Dox/pinterest-monitor/archive/refs/tags/v1.0.0.tar.gz
-tar -xzf v1.0.0.tar.gz
-cd pinterest-monitor-1.0.0
-pip install .
+git clone https://github.com/Sha-Dox/coral.git
+cd coral/pinterest_monitor
+pip install -r requirements.txt
 ```
 
 See [INSTALL.md](INSTALL.md) for detailed installation instructions.
@@ -73,13 +68,13 @@ All settings in `config.ini`:
 
 ### What's Next
 
-See the [GitHub Issues](https://github.com/Sha-Dox/pinterest-monitor/issues) for planned features and improvements.
+See the [GitHub Issues](https://github.com/Sha-Dox/coral/issues) for planned features and improvements.
 
 ### Support
 
 - 📖 [README](README.md)
 - 📦 [Installation Guide](INSTALL.md)
-- 🐛 [Report Issues](https://github.com/Sha-Dox/pinterest-monitor/issues)
+- 🐛 [Report Issues](https://github.com/Sha-Dox/coral/issues)
 
 ### License
 

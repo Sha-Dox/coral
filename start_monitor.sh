@@ -59,7 +59,10 @@ case $MONITOR in
     instagram)
         echo -e "${YELLOW}📸 Starting Instagram Monitor...${NC}"
         cd instagram_monitor
-        nohup python3 instagram_monitor.py > /tmp/instagram_standalone.log 2>&1 &
+        if [ ! -f "instagram_monitor.conf" ]; then
+            python3 instagram_monitor.py --generate-config instagram_monitor.conf > /tmp/instagram_monitor_generate.log 2>&1
+        fi
+        nohup python3 instagram_monitor.py --config-file instagram_monitor.conf --web-dashboard --web-dashboard-port "$PORT" > /tmp/instagram_standalone.log 2>&1 &
         PID=$!
         ;;
     pinterest)
@@ -71,7 +74,10 @@ case $MONITOR in
     spotify)
         echo -e "${YELLOW}🎵 Starting Spotify Monitor...${NC}"
         cd spotify_monitor
-        nohup python3 spotify_monitor.py > /tmp/spotify_standalone.log 2>&1 &
+        if [ ! -f "spotify_profile_monitor.conf" ]; then
+            python3 spotify_monitor.py --generate-config spotify_profile_monitor.conf > /tmp/spotify_monitor_generate.log 2>&1
+        fi
+        nohup python3 spotify_monitor.py --config-file spotify_profile_monitor.conf > /tmp/spotify_standalone.log 2>&1 &
         PID=$!
         ;;
     *)

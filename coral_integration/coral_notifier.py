@@ -8,10 +8,10 @@ It automatically detects if the hub is available and falls back to standalone mo
 
 Usage Example:
     from coral_notifier import CoralNotifier
-    
+
     # Initialize (auto-detects hub from config.yaml)
     notifier = CoralNotifier('instagram')
-    
+
     # Send events (only if hub available)
     notifier.send_event(
         username='johndoe',
@@ -97,7 +97,7 @@ class CoralNotifier:
     ) -> bool:
         """Send event to hub (only if available)"""
         if not self._hub_available:
-            logger.debug(f"Standalone mode: Skipping hub notification")
+            logger.debug("Standalone mode: Skipping hub notification")
             return True
 
         try:

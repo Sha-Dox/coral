@@ -15,9 +15,14 @@
 ## Quick Start
 
 ```bash
-git clone https://github.com/Sha-Dox/coral.git    # Clone the repo
-cd coral                          # cd into the directory
-./start_all.sh                    # Start everything
+git clone https://github.com/Sha-Dox/coral.git
+cd coral
+./setup.sh
+./start_all.sh
+```
+
+```bash
+# Other options
 ./start_monitor.sh instagram      # Start one monitor
 ./start_monitors_only.sh          # All monitors, no hub
 ```
@@ -82,7 +87,7 @@ Edit `config.yaml`:
 ```yaml
 coral:
   enabled: true
-  port: 3333
+  port: 3456
 
 instagram:
   enabled: true
@@ -128,17 +133,17 @@ coral.enabled: true
 
 ```yaml
 coral:
-  port: 6000  # Change from 3333
+  port: 6000  # Change from 3456
 
 instagram:
   port: 9000  # Change from 8000
 ```
 
-Then update database:
+Then restart services:
 ```bash
-cd coral && python3 update_config.py && cd ..
 ./start_all.sh
 ```
+CORAL syncs platform trigger URLs on startup (optional: `python3 coral/update_config.py`).
 
 ## Usage Modes
 
@@ -146,7 +151,7 @@ cd coral && python3 update_config.py && cd ..
 ```bash
 ./start_all.sh
 ```
-- Unified dashboard at http://localhost:3333
+- Unified dashboard at http://localhost:3456
 - Manual trigger buttons
 - Person linking across platforms
 - Timeline view of all events
@@ -172,35 +177,24 @@ cd coral && python3 update_config.py && cd ..
 ## Manual Triggers
 
 ### From Web UI
-1. Open http://localhost:3333
+1. Open http://localhost:3456
 2. Go to Settings tab
 3. Click "Trigger" button for any platform
 4. Or click "Trigger All Checks" on main page
 
 ### From Command Line
 ```bash
-# Trigger all
-curl -X POST http://localhost:3333/api/trigger
+# Trigger from hub (per-platform)
+curl -X POST http://localhost:3456/api/platforms/<id>/trigger
 
-# Trigger specific platform
-curl -X POST http://localhost:8000/api/check-now  # Instagram
-curl -X POST http://localhost:5001/api/check-now  # Pinterest
-curl -X POST http://localhost:8001/api/check-now  # Spotify
+# Trigger via monitor APIs
+curl -X POST http://localhost:8000/api/trigger-check  # Instagram
+curl -X POST http://localhost:5001/api/check-now      # Pinterest
 ```
 
 ### Configure Trigger URLs
 
-Edit `config.yaml`:
-```yaml
-instagram:
-  trigger_url: "http://localhost:8000/api/check-now"
-  
-pinterest:
-  trigger_url: "http://localhost:5001/api/check-now"
-  
-spotify:
-  trigger_url: "http://localhost:8001/api/check-now"
-```
+Trigger URLs are auto-synced from `config.yaml` on startup.
 
 ## Auto-Detection
 
@@ -275,7 +269,7 @@ Each monitor exposes:
 
 Find and stop running services:
 ```bash
-lsof -ti:3333,5001,8000,8001
+lsof -ti:3456,5001,8000,8001
 ```
 
 Then stop each PID individually:
@@ -343,15 +337,15 @@ See [docs/contributing/CONTRIBUTING.md](docs/contributing/CONTRIBUTING.md) for g
 
 ---
 
-**Get Started**: `./start_all.sh` → http://localhost:3333
+**Get Started**: `./start_all.sh` → http://localhost:3456
 
-## 📱 Example Monitors
+## 📱 Included Monitors
 
-CORAL works with any OSINT tool. Here are some standalone examples that can optionally integrate:
+CORAL ships with bundled monitors that work standalone or with the hub:
 
-- **[Instagram Monitor](https://github.com/YOUR_USERNAME/instagram_monitor)** - Track Instagram user activities and profile changes
-- **[Pinterest Monitor](https://github.com/YOUR_USERNAME/pinterest_monitor)** - Monitor Pinterest boards for new pins and activity
-- **[Spotify Monitor](https://github.com/YOUR_USERNAME/spotify_monitor)** - Track Spotify friend activity and profile changes
+- **[Instagram Monitor](instagram_monitor/)** - Track Instagram user activities and profile changes
+- **[Pinterest Monitor](pinterest_monitor/)** - Monitor Pinterest boards for new pins and activity
+- **[Spotify Monitor](spotify_monitor/)** - Track Spotify friend activity and profile changes
 
 Each monitor works completely standalone. CORAL integration is optional and adds unified dashboard functionality.
 

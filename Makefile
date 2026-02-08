@@ -51,7 +51,7 @@ docker-up:
 	@echo "Starting Docker containers..."
 	docker-compose up -d
 	@echo "✓ Docker containers started"
-	@echo "CORAL Hub: http://localhost:3333"
+	@echo "CORAL Hub: http://localhost:3456"
 
 docker-down:
 	@echo "Stopping Docker containers..."

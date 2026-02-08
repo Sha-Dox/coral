@@ -78,7 +78,7 @@ echo ""
 echo "Creating environment template..."
 cat > .env.example << 'EOF'
 # CORAL Environment Variables
-CORAL_PORT=3333
+CORAL_PORT=3456
 CORAL_HOST=0.0.0.0
 CORAL_DEBUG=false
 
@@ -99,7 +99,7 @@ echo ""
 echo "Next steps:"
 echo "  1. Review config.yaml"
 echo "  2. Start CORAL: ./start_all.sh"
-echo "  3. Open http://localhost:3333"
+echo "  3. Open http://localhost:3456"
 echo ""
 echo "Or use Docker:"
 echo "  docker-compose up -d"

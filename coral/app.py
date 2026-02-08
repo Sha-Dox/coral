@@ -7,7 +7,6 @@ from datetime import datetime
 from dateutil import parser as date_parser
 from pathlib import Path
 import asyncio
-import json
 import logging
 import re
 import sys
@@ -16,7 +15,7 @@ import requests
 
 import config
 import database as db
-from config_loader import config as hub_config
+from config_loader import config as hub_config, get_trigger_urls
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,8 +23,25 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config["JSON_SORT_KEYS"] = False
 
+
+def sync_platform_trigger_urls():
+    try:
+        trigger_urls = get_trigger_urls()
+    except Exception as exc:
+        logger.warning("Unable to load trigger URLs: %s", exc)
+        return
+
+    for name, url in trigger_urls.items():
+        platform = db.get_platform_by_name(name)
+        if not platform:
+            continue
+        if platform.get("trigger_url") != url:
+            db.update_platform(platform["id"], trigger_url=url)
+
+
 # Initialize database
 db.init_db()
+sync_platform_trigger_urls()
 
 # Maigret integration
 MAIGRET_ROOT = Path(__file__).resolve().parent.parent / "maigret"
@@ -688,7 +704,7 @@ def api_stats():
                         event_dt = event_dt.replace(tzinfo=timezone.utc)
                     if (now - event_dt).total_seconds() < 86400:
                         recent_count += 1
-                except:
+                except (ValueError, TypeError):
                     pass
 
         return jsonify(

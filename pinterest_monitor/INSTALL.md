@@ -1,29 +1,10 @@
 # Installation Guide
 
-## Method 1: Quick Install (Recommended)
+## Bundled with CORAL (Recommended)
 
-### Using pip from GitHub
 ```bash
-pip install git+https://github.com/Sha-Dox/pinterest-monitor.git
-```
-
-### Download and Install
-```bash
-# Download the latest release
-wget https://github.com/Sha-Dox/pinterest-monitor/archive/refs/tags/v1.0.0.tar.gz
-tar -xzf v1.0.0.tar.gz
-cd pinterest-monitor-1.0.0
-
-# Install
-pip install .
-```
-
-## Method 2: Manual Installation
-
-### Clone Repository
-```bash
-git clone https://github.com/Sha-Dox/pinterest-monitor.git
-cd pinterest-monitor
+git clone https://github.com/Sha-Dox/coral.git
+cd coral/pinterest_monitor
 pip install -r requirements.txt
 ```
 
@@ -44,11 +25,6 @@ enable_coral = false
 
 ## Running
 
-### If installed via pip:
-```bash
-python -m app
-```
-
 ### If running from source:
 ```bash
 python app.py
@@ -64,7 +40,7 @@ Open http://localhost:5001 in your browser
 ### Port already in use
 Change the port in `config.ini`:
 ```ini
-port = 5002
+port = 5001
 ```
 
 ### Database issues
@@ -97,7 +73,7 @@ After=network.target
 [Service]
 Type=simple
 User=youruser
-WorkingDirectory=/path/to/pinterest-monitor
+WorkingDirectory=/path/to/coral/pinterest_monitor
 ExecStart=/usr/bin/python3 app.py
 Restart=always
 

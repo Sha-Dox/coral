@@ -14,7 +14,7 @@ try:
     from config_loader import config
 
     # Server settings
-    PORT = config.get("hub.port", 3333)
+    PORT = config.get("hub.port", 3456)
     HOST = config.get("hub.host", "0.0.0.0")
     DEBUG = config.get("hub.debug", False)
 
@@ -27,7 +27,7 @@ try:
 except (ImportError, FileNotFoundError) as e:
     print(f"Warning: Could not load config.yaml, using defaults: {e}")
     # Fallback to environment variables
-    PORT = int(os.environ.get("CORAL_PORT", 3333))
+    PORT = int(os.environ.get("CORAL_PORT", 3456))
     HOST = os.environ.get("CORAL_HOST", "0.0.0.0")
     DEBUG = os.environ.get("CORAL_DEBUG", "False").lower() == "true"
     DATABASE_NAME = os.environ.get("CORAL_DB", "coral.db")

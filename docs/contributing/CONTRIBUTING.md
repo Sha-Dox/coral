@@ -52,7 +52,7 @@ twitter:
   port: 8002
   webhook:
     enabled: true
-    url: "http://localhost:3333/api/webhook/twitter"
+    url: "http://localhost:3456/api/webhook/twitter"
   trigger_url: "http://localhost:8002/api/check-now"
 ```
 
@@ -60,6 +60,7 @@ twitter:
 
 ```bash
 cd coral
+# Optional: sync trigger URLs immediately (CORAL also syncs on startup)
 python3 update_config.py
 cd ..
 ```
@@ -78,7 +79,7 @@ See [AI_AGENT_INTEGRATION.md](../integration/AI_AGENT_INTEGRATION.md) for detail
 - **Auto-detection**: `python3 demo_auto_detection.py`
 - **Integrated mode**: `./start_all.sh`
 - **Standalone mode**: `./start_monitor.sh <platform>`
-- **Web UI**: http://localhost:3333
+- **Web UI**: http://localhost:3456
 
 ## 📚 Documentation
 

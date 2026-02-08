@@ -18,14 +18,14 @@ def check_coral_available(hub_url: str, timeout: float = 1.0) -> Tuple[bool, str
     Quick check if hub is available.
 
     Args:
-        hub_url: CORAL base URL (e.g., http://localhost:3333)
+        hub_url: CORAL base URL (e.g., http://localhost:3456)
         timeout: Timeout in seconds (default: 1.0 for fast check)
 
     Returns:
         Tuple of (is_available, message)
 
     Example:
-        available, msg = check_coral_available("http://localhost:3333")
+        available, msg = check_coral_available("http://localhost:3456")
         if available:
             print("CORAL is available, will send webhooks")
         else:
@@ -75,7 +75,7 @@ def should_use_coral(config, monitor_name: str) -> Tuple[bool, str]:
     # Extract base URL (remove /api/webhook/... path)
     try:
         base_url = hub_url.split("/api/")[0]
-    except:
+    except Exception:
         base_url = hub_url
 
     # Quick check if hub is available

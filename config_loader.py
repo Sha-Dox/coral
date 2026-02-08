@@ -7,7 +7,7 @@ easy access to settings for all services.
 
 Usage:
     from config_loader import config
-    
+
     port = config.get('hub.port')
     instagram_port = config.get('instagram.port')
 """
@@ -130,9 +130,9 @@ def get_monitor_config(monitor_name):
 def get_trigger_urls():
     """Get all trigger URLs for the hub database"""
     return {
-        "instagram": f"http://localhost:{config.get('instagram.port')}/api/trigger",
+        "instagram": f"http://localhost:{config.get('instagram.port')}/api/trigger-check",
         "pinterest": f"http://localhost:{config.get('pinterest.port')}/api/check-now",
-        "spotify": f"http://localhost:{config.get('spotify.port')}/api/trigger",
+        "spotify": None,
     }
 
 

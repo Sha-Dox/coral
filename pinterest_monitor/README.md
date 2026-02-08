@@ -1,6 +1,6 @@
 # 📌 Pinterest Monitor
 
-> Part of [CORAL](https://github.com/yourusername/coral) - Centralised OSINT Repository and Automation Layer
+> Part of [CORAL](https://github.com/Sha-Dox/coral) - Centralised OSINT Repository and Automation Layer
 
 Real-time OSINT monitoring tool for Pinterest boards and user activity.
 
@@ -19,15 +19,11 @@ Real-time OSINT monitoring tool for Pinterest boards and user activity.
 - Python 3.7+
 - Flask
 
-### Installation
+### Installation (bundled with CORAL)
 
 ```bash
-# Quick install from GitHub
-pip install git+https://github.com/Sha-Dox/pinterest-monitor.git
-
-# OR clone and install manually
-git clone https://github.com/Sha-Dox/pinterest-monitor.git
-cd pinterest-monitor
+git clone https://github.com/Sha-Dox/coral.git
+cd coral/pinterest_monitor
 pip install -r requirements.txt
 ```
 
@@ -73,7 +69,7 @@ To integrate:
 2. Configure webhook in your config
 3. Events will be sent to CORAL automatically
 
-See: https://github.com/YOUR_USERNAME/coral
+See: https://github.com/Sha-Dox/coral
 
 ## 📄 License
 

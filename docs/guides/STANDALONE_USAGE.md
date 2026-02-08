@@ -4,6 +4,12 @@ You can use any OSINT monitor independently without the central hub.
 
 ## Quick Start
 
+### Clone and enter the repo
+```bash
+git clone https://github.com/Sha-Dox/coral.git
+cd coral
+```
+
 ### Option 1: Start Individual Monitor
 ```bash
 ./start_monitor.sh instagram
@@ -20,7 +26,7 @@ You can use any OSINT monitor independently without the central hub.
 ```bash
 # Instagram
 cd instagram_monitor
-python3 instagram_monitor.py
+python3 instagram_monitor.py --web-dashboard --web-dashboard-port 8000
 
 # Pinterest
 cd pinterest_monitor
@@ -28,7 +34,7 @@ python3 app.py
 
 # Spotify
 cd spotify_monitor
-python3 spotify_monitor.py
+python3 spotify_monitor.py --config-file spotify_profile_monitor.conf
 ```
 
 ## Configuration for Standalone Mode

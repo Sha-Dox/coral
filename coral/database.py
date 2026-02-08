@@ -382,7 +382,7 @@ def add_event(
 
         cursor.execute(
             """
-            INSERT INTO events (platform_id, person_id, platform_username, 
+            INSERT INTO events (platform_id, person_id, platform_username,
                               event_type, summary, event_time, event_data)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """,

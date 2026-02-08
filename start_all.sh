@@ -23,7 +23,7 @@ echo ""
 
 # Read configuration
 HUB_ENABLED=$(python3 -c "from config_loader import config; print(config.get('hub.enabled', True))" 2>/dev/null || echo "True")
-HUB_PORT=$(python3 -c "from config_loader import config; print(config.get('hub.port'))" 2>/dev/null || echo "3333")
+HUB_PORT=$(python3 -c "from config_loader import config; print(config.get('hub.port'))" 2>/dev/null || echo "3456")
 INSTAGRAM_ENABLED=$(python3 -c "from config_loader import config; print(config.get('instagram.enabled', True))" 2>/dev/null || echo "True")
 INSTAGRAM_PORT=$(python3 -c "from config_loader import config; print(config.get('instagram.port'))" 2>/dev/null || echo "8000")
 PINTEREST_ENABLED=$(python3 -c "from config_loader import config; print(config.get('pinterest.enabled', True))" 2>/dev/null || echo "True")
@@ -62,11 +62,14 @@ else
     echo -e "${YELLOW}⊘ Pinterest Monitor disabled in config${NC}"
 fi
 
-# Start Instagram Trigger API
+# Start Instagram Monitor (web dashboard + API)
 if [ "$INSTAGRAM_ENABLED" = "True" ]; then
-    echo -e "${YELLOW}📸 Starting Instagram Trigger API...${NC}"
+    echo -e "${YELLOW}📸 Starting Instagram Monitor...${NC}"
     cd instagram_monitor
-    python3 trigger_api.py > /tmp/instagram_trigger.log 2>&1 &
+    if [ ! -f "instagram_monitor.conf" ]; then
+        python3 instagram_monitor.py --generate-config instagram_monitor.conf > /tmp/instagram_monitor_generate.log 2>&1
+    fi
+    python3 instagram_monitor.py --config-file instagram_monitor.conf --web-dashboard --web-dashboard-port "$INSTAGRAM_PORT" > /tmp/instagram_monitor.log 2>&1 &
     INSTAGRAM_PID=$!
     PIDS+=($INSTAGRAM_PID)
     echo -e "  ${GREEN}✓${NC} Port: $INSTAGRAM_PORT, PID: $INSTAGRAM_PID"
@@ -76,11 +79,14 @@ else
     echo -e "${YELLOW}⊘ Instagram Monitor disabled in config${NC}"
 fi
 
-# Start Spotify Trigger API
+# Start Spotify Monitor
 if [ "$SPOTIFY_ENABLED" = "True" ]; then
-    echo -e "${YELLOW}🎵 Starting Spotify Trigger API...${NC}"
+    echo -e "${YELLOW}🎵 Starting Spotify Monitor...${NC}"
     cd spotify_monitor
-    python3 trigger_api.py > /tmp/spotify_trigger.log 2>&1 &
+    if [ ! -f "spotify_profile_monitor.conf" ]; then
+        python3 spotify_monitor.py --generate-config spotify_profile_monitor.conf > /tmp/spotify_monitor_generate.log 2>&1
+    fi
+    python3 spotify_monitor.py --config-file spotify_profile_monitor.conf > /tmp/spotify_monitor.log 2>&1 &
     SPOTIFY_PID=$!
     PIDS+=($SPOTIFY_PID)
     echo -e "  ${GREEN}✓${NC} Port: $SPOTIFY_PORT, PID: $SPOTIFY_PID"
@@ -98,8 +104,8 @@ echo ""
 # Show URLs for enabled services
 [ "$HUB_ENABLED" = "True" ] && echo -e "CORAL Dashboard:          ${BLUE}http://localhost:$HUB_PORT${NC}"
 [ "$PINTEREST_ENABLED" = "True" ] && echo -e "📌 Pinterest Monitor:     ${BLUE}http://localhost:$PINTEREST_PORT${NC}"
-[ "$INSTAGRAM_ENABLED" = "True" ] && echo -e "📸 Instagram Trigger API: ${BLUE}http://localhost:$INSTAGRAM_PORT${NC}"
-[ "$SPOTIFY_ENABLED" = "True" ] && echo -e "🎵 Spotify Trigger API:   ${BLUE}http://localhost:$SPOTIFY_PORT${NC}"
+[ "$INSTAGRAM_ENABLED" = "True" ] && echo -e "📸 Instagram Monitor:     ${BLUE}http://localhost:$INSTAGRAM_PORT${NC}"
+[ "$SPOTIFY_ENABLED" = "True" ] && echo -e "🎵 Spotify Monitor:       ${BLUE}http://localhost:$SPOTIFY_PORT${NC}"
 
 echo ""
 echo -e "${YELLOW}⚙️  Configuration:${NC} Edit config.yaml to enable/disable services"
@@ -114,8 +120,7 @@ echo ""
 echo -e "${YELLOW}📋 Logs:${NC}"
 [ "$HUB_ENABLED" = "True" ] && echo "  CORAL:     tail -f /tmp/coral.log"
 [ "$PINTEREST_ENABLED" = "True" ] && echo "  Pinterest: tail -f /tmp/pinterest_monitor.log"
-[ "$INSTAGRAM_ENABLED" = "True" ] && echo "  Instagram: tail -f /tmp/instagram_trigger.log"
-[ "$SPOTIFY_ENABLED" = "True" ] && echo "  Spotify:   tail -f /tmp/spotify_trigger.log"
+[ "$INSTAGRAM_ENABLED" = "True" ] && echo "  Instagram: tail -f /tmp/instagram_monitor.log"
+[ "$SPOTIFY_ENABLED" = "True" ] && echo "  Spotify:   tail -f /tmp/spotify_monitor.log"
 echo -e "${CYAN}═══════════════════════════════════════════════════════════${NC}"
 echo ""
-
