@@ -12,7 +12,7 @@
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 ./start_all.sh                    # Start everything
@@ -22,17 +22,17 @@
 
 Open http://localhost:5002 for the unified dashboard.
 
-## ✨ Features
+## Features
 
-- **🎯 Unified Dashboard** - Monitor all platforms in one place
-- **🤖 Auto-Detection** - Monitors auto-detect CORAL (<500ms)
-- **🔧 Standalone Mode** - Use each tool independently
-- **⚙️ Central Config** - One `config.yaml` for everything
-- **🔄 Manual Triggers** - Check all platforms instantly
-- **👥 Person Linking** - Link profiles across platforms
-- **🎨 Dark Theme** - Beautiful responsive UI
+- **Unified Dashboard** - Monitor all platforms in one place
+- **Auto-Detection** - Monitors auto-detect CORAL (<500ms)
+- **Standalone Mode** - Use each tool independently
+- **Central Config** - One `config.yaml` for everything
+- **Manual Triggers** - Check all platforms instantly
+- **Person Linking** - Link profiles across platforms
+- **Dark Theme** - Beautiful responsive UI
 
-## 📦 Installation
+## Installation
 
 ```bash
 # Install dependencies
@@ -47,7 +47,7 @@ nano config.yaml  # Edit settings
 ./start_all.sh
 ```
 
-## 🎛️ Configuration
+## Configuration
 
 Edit `config.yaml`:
 
@@ -112,16 +112,16 @@ cd coral && python3 update_config.py && cd ..
 ./start_all.sh
 ```
 
-## 🚀 Usage Modes
+## Usage Modes
 
 ### Integrated Mode (Hub + Monitors)
 ```bash
 ./start_all.sh
 ```
-- ✅ Unified dashboard at http://localhost:5002
-- ✅ Manual trigger buttons
-- ✅ Person linking across platforms
-- ✅ Timeline view of all events
+- Unified dashboard at http://localhost:5002
+- Manual trigger buttons
+- Person linking across platforms
+- Timeline view of all events
 
 ### Standalone Mode (Independent Monitors)
 ```bash
@@ -129,19 +129,19 @@ cd coral && python3 update_config.py && cd ..
 ./start_monitor.sh pinterest  # Just Pinterest  
 ./start_monitor.sh spotify    # Just Spotify
 ```
-- ✅ Zero dependencies on hub
-- ✅ Original functionality preserved
-- ✅ Works if hub is down
+- Zero dependencies on hub
+- Original functionality preserved
+- Works if hub is down
 
 ### Mixed Mode (All Monitors, No Hub)
 ```bash
 ./start_monitors_only.sh
 ```
-- ✅ All monitors active
-- ✅ No central dashboard
-- ✅ Independent databases
+- All monitors active
+- No central dashboard
+- Independent databases
 
-## 🔄 Manual Triggers
+## Manual Triggers
 
 ### From Web UI
 1. Open http://localhost:5002
@@ -174,7 +174,7 @@ spotify:
   trigger_url: "http://localhost:8001/api/check-now"
 ```
 
-## 🤖 Auto-Detection
+## Auto-Detection
 
 Monitors automatically detect if CORAL is available:
 
@@ -195,7 +195,7 @@ Test it:
 python3 demo_auto_detection.py  # See auto-detection in action
 ```
 
-## 👥 Person Management
+## Person Management
 
 Link multiple platform profiles to track one person:
 
@@ -283,7 +283,7 @@ notifier.send_event(
 )
 ```
 
-## 🎯 Use Cases
+## Use Cases
 
 **Security Researcher**: Monitor multiple social profiles  
 **OSINT Investigator**: Track target across platforms  
@@ -297,15 +297,15 @@ notifier.send_event(
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guide
 - **LICENSE** - MIT License
 
-## 🎉 Key Benefits
+## Key Benefits
 
-✅ **Flexible** - Use with or without hub  
-✅ **Fast** - Auto-detection <500ms  
-✅ **Independent** - Each tool works standalone  
-✅ **Extensible** - Easy to add platforms  
-✅ **Well Documented** - Comprehensive guides  
+**Flexible** - Use with or without hub  
+**Fast** - Auto-detection <500ms  
+**Independent** - Each tool works standalone  
+**Extensible** - Easy to add platforms  
+**Well Documented** - Comprehensive guides  
 
-## 📄 License
+## License
 
 MIT License - See [LICENSE](LICENSE)
 
