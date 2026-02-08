@@ -32,8 +32,32 @@ Open http://localhost:5002 for the unified dashboard.
 - **Person Linking** - Link profiles across platforms
 - **Dark Theme** - Beautiful responsive UI
 
+## Project Layout
+
+- `coral/` - CORAL hub (web UI + API)
+- `coral_integration/` - Integration helpers
+- `instagram_monitor/` - Instagram monitor (standalone)
+- `pinterest_monitor/` - Pinterest monitor (standalone)
+- `spotify_monitor/` - Spotify monitor (standalone)
+- `config.yaml` - Central configuration
+- `start_*.sh` - Run scripts
+- `API.md`, `FAQ.md`, `TROUBLESHOOTING.md`, `DEPLOYMENT.md` - Docs
+
 ## Installation
 
+### Local (recommended)
+```bash
+./setup.sh
+nano config.yaml
+./start_all.sh
+```
+
+### Docker
+```bash
+docker-compose up -d
+```
+
+### Manual (pip)
 ```bash
 # Install dependencies
 cd coral
