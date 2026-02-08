@@ -11,8 +11,8 @@ Key Components:
 - config_loader.py: Configuration management
 """
 
-__version__ = '1.0.0'
-__all__ = ['CoralNotifier']
+__version__ = "1.0.0"
+__all__ = ["CoralNotifier"]
 
 try:
     from .coral_notifier import CoralNotifier
