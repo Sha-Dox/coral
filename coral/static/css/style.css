@@ -637,6 +637,80 @@ form {
     margin-top: 12px;
 }
 
+.advanced-settings {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.advanced-settings summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.advanced-settings[open] summary {
+    color: var(--text-primary);
+}
+
+.toggle-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.toggle-row label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.toggle-row input[type="checkbox"] {
+    accent-color: var(--accent);
+}
+
+.progress-container {
+    display: none;
+    margin: 16px 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.progress-container.active {
+    display: block;
+}
+
+.progress-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--bg-tertiary);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+    transition: width 0.4s ease;
+}
+
+.progress-text {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
 .search-summary {
     background: var(--bg-secondary);
     border: 1px solid var(--border);

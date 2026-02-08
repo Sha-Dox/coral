@@ -82,7 +82,30 @@ def run_coroutine(coro):
     return asyncio.run(coro)
 
 
-def run_maigret_search(username, top_sites, timeout, max_connections):
+def parse_list_value(value):
+    if not value:
+        return []
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if isinstance(value, str):
+        cleaned = value.replace("\n", ",")
+        return [item.strip() for item in cleaned.split(",") if item.strip()]
+    return []
+
+
+def run_maigret_search(
+    username,
+    top_sites,
+    timeout,
+    max_connections,
+    retries,
+    id_type,
+    tags,
+    site_list,
+    include_disabled,
+    check_domains,
+    cookies_file,
+):
     if not MAIGRET_AVAILABLE:
         raise RuntimeError("Maigret is not available in this environment")
 
@@ -92,24 +115,30 @@ def run_maigret_search(username, top_sites, timeout, max_connections):
     db_sites = MaigretDatabase().load_from_path(str(MAIGRET_DB_FILE))
     sites = db_sites.ranked_sites_dict(
         top=top_sites,
-        disabled=False,
-        id_type="username",
+        tags=tags,
+        names=site_list,
+        disabled=include_disabled,
+        id_type=id_type,
     )
 
     search_logger = logging.getLogger("maigret")
     search_logger.setLevel(logging.WARNING)
 
-    return run_coroutine(
+    results = run_coroutine(
         maigret.search(
             username=username,
             site_dict=sites,
             timeout=timeout,
             logger=search_logger,
-            id_type="username",
+            id_type=id_type,
             max_connections=max_connections,
             no_progressbar=True,
+            retries=retries,
+            check_domains=check_domains,
+            cookies=str(cookies_file) if cookies_file else None,
         )
     )
+    return results, len(sites)
 
 
 @app.route("/")
@@ -547,16 +576,59 @@ def api_maigret_search():
                 503,
             )
 
-        top_sites = int(data.get("top_sites", 200))
+        top_sites = int(data.get("top_sites", 500))
         timeout = int(data.get("timeout", 5))
         max_connections = int(data.get("max_connections", 50))
+        retries = int(data.get("retries", 0))
+        id_type = (data.get("id_type") or "username").strip()
+        include_disabled = bool(data.get("include_disabled", False))
+        check_domains = bool(data.get("check_domains", False))
+        use_cookies = bool(data.get("use_cookies", False))
+        all_sites = bool(data.get("all_sites", False))
 
-        top_sites = max(1, min(top_sites, 5000))
+        tags = parse_list_value(data.get("tags"))
+        site_list = parse_list_value(data.get("site_list"))
+
+        if all_sites:
+            top_sites = 999999999
+        else:
+            top_sites = max(1, min(top_sites, 5000))
+
         timeout = max(1, min(timeout, 60))
         max_connections = max(1, min(max_connections, 200))
+        retries = max(0, min(retries, 5))
+
+        cookies_file = None
+        if use_cookies:
+            candidates = [Path("cookies.txt")]
+            if MAIGRET_ROOT.exists():
+                candidates.append(MAIGRET_ROOT / "cookies.txt")
+            cookies_file = next((c for c in candidates if c.exists()), None)
+            if not cookies_file:
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "error": "cookies.txt not found for Maigret search",
+                        }
+                    ),
+                    400,
+                )
 
         start_time = datetime.utcnow()
-        results = run_maigret_search(username, top_sites, timeout, max_connections)
+        results, scope_sites = run_maigret_search(
+            username,
+            top_sites,
+            timeout,
+            max_connections,
+            retries,
+            id_type,
+            tags,
+            site_list,
+            include_disabled,
+            check_domains,
+            cookies_file,
+        )
 
         found = []
         for site_name, site_data in results.items():
@@ -588,9 +660,18 @@ def api_maigret_search():
                 "username": username,
                 "stats": {
                     "checked_sites": len(results),
+                    "scope_sites": scope_sites,
                     "found_sites": len(found),
                     "duration_ms": duration_ms,
                     "top_sites": top_sites,
+                },
+                "filters": {
+                    "tags": tags,
+                    "site_list": site_list,
+                    "include_disabled": include_disabled,
+                    "check_domains": check_domains,
+                    "use_cookies": use_cookies,
+                    "id_type": id_type,
                 },
                 "found": found,
             }

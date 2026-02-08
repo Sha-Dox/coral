@@ -202,7 +202,16 @@ Search a username across public sites using Maigret.
 {
   "username": "johndoe",
   "top_sites": 500,
-  "timeout": 5
+  "timeout": 5,
+  "max_connections": 50,
+  "retries": 0,
+  "tags": "social, coding",
+  "site_list": "GitHub, Reddit",
+  "include_disabled": false,
+  "check_domains": false,
+  "use_cookies": false,
+  "all_sites": false,
+  "id_type": "username"
 }
 ```
 
@@ -213,9 +222,18 @@ Search a username across public sites using Maigret.
   "username": "johndoe",
   "stats": {
     "checked_sites": 500,
+    "scope_sites": 500,
     "found_sites": 12,
     "duration_ms": 4200,
     "top_sites": 500
+  },
+  "filters": {
+    "tags": ["social", "coding"],
+    "site_list": ["GitHub", "Reddit"],
+    "include_disabled": false,
+    "check_domains": false,
+    "use_cookies": false,
+    "id_type": "username"
   },
   "found": [
     {

@@ -9,6 +9,8 @@ let state = {
     maigretLoading: false
 };
 
+let maigretProgressTimer = null;
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     setupTabs();
@@ -114,6 +116,15 @@ async function searchMaigret(event) {
     const username = document.getElementById('maigret-username').value.trim();
     const topSites = parseInt(document.getElementById('maigret-top-sites').value, 10);
     const timeout = parseInt(document.getElementById('maigret-timeout').value, 10);
+    const maxConnections = parseInt(document.getElementById('maigret-max-connections').value, 10);
+    const retries = parseInt(document.getElementById('maigret-retries').value, 10);
+    const idType = document.getElementById('maigret-id-type').value;
+    const tags = document.getElementById('maigret-tags').value;
+    const siteList = document.getElementById('maigret-sites').value;
+    const allSites = document.getElementById('maigret-all-sites').checked;
+    const includeDisabled = document.getElementById('maigret-include-disabled').checked;
+    const checkDomains = document.getElementById('maigret-check-domains').checked;
+    const useCookies = document.getElementById('maigret-use-cookies').checked;
 
     if (!username) {
         alert('Username is required');
@@ -121,6 +132,7 @@ async function searchMaigret(event) {
     }
 
     setMaigretLoading(true);
+    startMaigretProgress();
     const resultsContainer = document.getElementById('maigret-results');
     resultsContainer.innerHTML = `
         <div class="empty-state">
@@ -135,13 +147,30 @@ async function searchMaigret(event) {
             body: JSON.stringify({
                 username,
                 top_sites: topSites,
-                timeout
+                timeout,
+                max_connections: maxConnections,
+                retries,
+                id_type: idType,
+                tags,
+                site_list: siteList,
+                all_sites: allSites,
+                include_disabled: includeDisabled,
+                check_domains: checkDomains,
+                use_cookies: useCookies
             })
         });
 
         state.maigretResults = data;
         renderMaigretResults();
+    } catch (error) {
+        resultsContainer.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">⚠️</div>
+                <p>${escapeHtml(error.message || 'Search failed')}</p>
+            </div>
+        `;
     } finally {
+        stopMaigretProgress();
         setMaigretLoading(false);
     }
 }
@@ -152,6 +181,52 @@ function setMaigretLoading(isLoading) {
     if (!button) return;
     button.disabled = isLoading;
     button.textContent = isLoading ? 'Searching...' : 'Search';
+}
+
+function startMaigretProgress() {
+    const container = document.getElementById('maigret-progress');
+    const bar = document.getElementById('maigret-progress-bar');
+    const text = document.getElementById('maigret-progress-text');
+    if (!container || !bar) return;
+
+    container.classList.add('active');
+    if (text) {
+        text.textContent = 'Searching...';
+    }
+
+    let progress = 5;
+    bar.style.width = `${progress}%`;
+
+    if (maigretProgressTimer) {
+        clearInterval(maigretProgressTimer);
+    }
+
+    maigretProgressTimer = setInterval(() => {
+        progress = Math.min(progress + Math.random() * 8 + 4, 90);
+        bar.style.width = `${progress}%`;
+    }, 700);
+}
+
+function stopMaigretProgress() {
+    const container = document.getElementById('maigret-progress');
+    const bar = document.getElementById('maigret-progress-bar');
+    const text = document.getElementById('maigret-progress-text');
+    if (!container || !bar) return;
+
+    if (maigretProgressTimer) {
+        clearInterval(maigretProgressTimer);
+        maigretProgressTimer = null;
+    }
+
+    bar.style.width = '100%';
+    if (text) {
+        text.textContent = 'Complete';
+    }
+
+    setTimeout(() => {
+        container.classList.remove('active');
+        bar.style.width = '0%';
+    }, 600);
 }
 
 function renderMaigretResults() {
@@ -168,14 +243,21 @@ function renderMaigretResults() {
         return;
     }
 
-    const { username, stats, found } = state.maigretResults;
+    const { username, stats, found, filters } = state.maigretResults;
     const duration = formatDuration(stats.duration_ms);
+    const scopeSites = stats.scope_sites || stats.checked_sites || 0;
+    const tags = (filters && filters.tags && filters.tags.length) ? filters.tags.join(', ') : null;
+    const sites = (filters && filters.site_list && filters.site_list.length) ? filters.site_list.join(', ') : null;
 
     if (!found || found.length === 0) {
         container.innerHTML = `
             <div class="search-summary">
                 <div class="summary-title">Results for @${escapeHtml(username)}</div>
-                <div class="help-text">Checked ${stats.checked_sites} sites in ${duration}.</div>
+                <div class="help-text">
+                    Checked ${stats.checked_sites} of ${scopeSites} sites in ${duration}.
+                    ${tags ? `<br>Tags: ${escapeHtml(tags)}` : ''}
+                    ${sites ? `<br>Sites: ${escapeHtml(sites)}` : ''}
+                </div>
             </div>
             <div class="empty-state">
                 <div class="empty-state-icon">🕵️</div>
@@ -189,7 +271,9 @@ function renderMaigretResults() {
         <div class="search-summary">
             <div class="summary-title">Results for @${escapeHtml(username)}</div>
             <div class="help-text">
-                Found ${found.length} profiles across ${stats.checked_sites} sites in ${duration}.
+                Found ${found.length} profiles across ${stats.checked_sites} of ${scopeSites} sites in ${duration}.
+                ${tags ? `<br>Tags: ${escapeHtml(tags)}` : ''}
+                ${sites ? `<br>Sites: ${escapeHtml(sites)}` : ''}
             </div>
         </div>
         <div class="results-grid">
