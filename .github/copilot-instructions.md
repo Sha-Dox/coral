@@ -10,7 +10,7 @@
   `flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=venv,env,.git,__pycache__,instagram_monitor,pinterest_monitor,spotify_monitor`  
   `black --check --exclude='venv|env|\.git|instagram_monitor|pinterest_monitor|spotify_monitor' .`
 - Security (CI): `bandit -r . -f json -o bandit-report.json --exclude './venv,./env,./instagram_monitor,./pinterest_monitor,./spotify_monitor' || true`
-- Smoke check (single check): start hub then `curl http://localhost:5002/api/health`
+- Smoke check (single check): start hub then `curl http://localhost:3333/api/health`
 
 ## Architecture (Big Picture)
 - **Hub**: `coral/app.py` is a Flask API + web UI; it ingests monitor events via `POST /api/webhook/<platform>` and exposes `/api/persons`, `/api/events`, `/api/platforms`, `/api/health`.

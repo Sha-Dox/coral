@@ -23,7 +23,7 @@ echo ""
 
 # Read configuration
 HUB_ENABLED=$(python3 -c "from config_loader import config; print(config.get('hub.enabled', True))" 2>/dev/null || echo "True")
-HUB_PORT=$(python3 -c "from config_loader import config; print(config.get('hub.port'))" 2>/dev/null || echo "5002")
+HUB_PORT=$(python3 -c "from config_loader import config; print(config.get('hub.port'))" 2>/dev/null || echo "3333")
 INSTAGRAM_ENABLED=$(python3 -c "from config_loader import config; print(config.get('instagram.enabled', True))" 2>/dev/null || echo "True")
 INSTAGRAM_PORT=$(python3 -c "from config_loader import config; print(config.get('instagram.port'))" 2>/dev/null || echo "8000")
 PINTEREST_ENABLED=$(python3 -c "from config_loader import config; print(config.get('pinterest.enabled', True))" 2>/dev/null || echo "True")

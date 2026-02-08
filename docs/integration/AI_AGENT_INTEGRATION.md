@@ -14,7 +14,7 @@ Copy and paste this prompt to your AI assistant:
 I have an OSINT monitoring tool that I want to integrate with CORAL 
 (OSINT Repository Orchestration Project UI).
 
-CORAL is a central dashboard at http://localhost:5002 that collects 
+CORAL is a central dashboard at http://localhost:3333 that collects 
 events from multiple monitoring tools via webhooks.
 
 My tool monitors [PLATFORM_NAME] and detects [WHAT_IT_MONITORS].
@@ -25,7 +25,7 @@ Please help me:
 3. Add auto-detection so my tool works standalone if CORAL isn't running
 4. Make it send events for: [EVENT_TYPES]
 
-The webhook endpoint is: http://localhost:5002/api/webhook/[platform_name]
+The webhook endpoint is: http://localhost:3333/api/webhook/[platform_name]
 
 Example event: {username: "johndoe", event_type: "new_post", summary: "New post detected"}
 ```
@@ -40,7 +40,7 @@ Example event: {username: "johndoe", event_type: "new_post", summary: "New post 
 I'm building a [PLATFORM] monitoring tool and want to integrate it with CORAL.
 
 Context:
-- CORAL is running at http://localhost:5002
+- CORAL is running at http://localhost:3333
 - It receives webhooks at /api/webhook/[platform_name]
 - I want my tool to work both with and without CORAL
 
@@ -68,7 +68,7 @@ Current setup:
 - Current output: [how it outputs data]
 
 CORAL integration needed:
-- CORAL URL: http://localhost:5002
+- CORAL URL: http://localhost:3333
 - Webhook endpoint: /api/webhook/[platform]
 - Use coral_notifier.py helper module
 - Auto-detect if CORAL is running
@@ -129,7 +129,7 @@ I'm building a Twitter/X monitor that tracks user tweets and profile changes.
 
 Integration with CORAL:
 - Platform name: twitter
-- Webhook: http://localhost:5002/api/webhook/twitter
+- Webhook: http://localhost:3333/api/webhook/twitter
 - Events to send:
   - new_tweet: When user posts a tweet
   - profile_update: When profile bio/picture changes
@@ -199,7 +199,7 @@ Add this section:
   port: [your_port]
   webhook:
     enabled: true
-    url: "http://localhost:5002/api/webhook/[platform_name]"
+    url: "http://localhost:3333/api/webhook/[platform_name]"
 
 Also update the database with trigger URL if needed.
 ```
@@ -214,7 +214,7 @@ Help me test the CORAL integration:
 1. Test with CORAL running:
    - Start CORAL: cd coral && python3 app.py
    - Start my monitor: python3 my_monitor.py
-   - Verify events appear at http://localhost:5002
+   - Verify events appear at http://localhost:3333
 
 2. Test standalone mode:
    - Stop CORAL
@@ -255,7 +255,7 @@ I'm building a [PLATFORM] monitor that [WHAT IT DOES].
 CORAL Integration:
 
 CORAL Setup:
-- URL: http://localhost:5002
+- URL: http://localhost:3333
 - Webhook endpoint: /api/webhook/[platform]
 - Helper module: coral/coral/coral_notifier.py
 
@@ -364,7 +364,7 @@ Provide these to your AI assistant:
      port: 8002
      webhook:
        enabled: true
-       url: "http://localhost:5002/api/webhook/my_platform"
+       url: "http://localhost:3333/api/webhook/my_platform"
    ```
 
 ---
@@ -387,7 +387,7 @@ Checklist:
 Test commands:
 1. With CORAL: [command]
 2. Without CORAL: [command]
-3. Check events: curl http://localhost:5002/api/events/[platform]
+3. Check events: curl http://localhost:3333/api/events/[platform]
 ```
 
 ---

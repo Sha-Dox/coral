@@ -6,7 +6,7 @@
 docker-compose up -d
 ```
 
-Access at http://localhost:5002
+Access at http://localhost:3333
 
 ---
 
@@ -81,7 +81,7 @@ server {
     server_name coral.yourdomain.com;
 
     location / {
-        proxy_pass http://localhost:5002;
+        proxy_pass http://localhost:3333;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
@@ -108,7 +108,7 @@ server {
 ### Health Check
 
 ```bash
-curl http://localhost:5002/api/health
+curl http://localhost:3333/api/health
 ```
 
 ### Logs
@@ -157,7 +157,7 @@ Run monitors on separate machines, point to central CORAL:
 # monitor config.yaml
 instagram:
   webhook:
-    url: "http://central-coral.local:5002/api/webhook/instagram"
+    url: "http://central-coral.local:3333/api/webhook/instagram"
 ```
 
 ### Load Balancing

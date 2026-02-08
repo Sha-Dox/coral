@@ -44,6 +44,15 @@ class ConfigLoader:
         with open(config_path, "r") as f:
             self._config = yaml.safe_load(f)
 
+    def _resolve_keys(self, keys):
+        value = self._config
+        for k in keys:
+            if isinstance(value, dict) and k in value:
+                value = value[k]
+            else:
+                return None, False
+        return value, True
+
     def get(self, key, default=None):
         """
         Get configuration value using dot notation
@@ -53,17 +62,20 @@ class ConfigLoader:
             config.get('instagram.webhook.url')
         """
         keys = key.split(".")
-        value = self._config
-
-        for k in keys:
-            if isinstance(value, dict) and k in value:
-                value = value[k]
-            else:
-                return default
+        value, found = self._resolve_keys(keys)
+        alt_keys = None
+        if not found and keys and keys[0] == "hub":
+            alt_keys = ["coral"] + keys[1:]
+            value, found = self._resolve_keys(alt_keys)
+        if not found:
+            return default
 
         # Support environment variable overrides
         env_key = "OSINT_" + "_".join(k.upper() for k in keys)
         env_value = os.getenv(env_key)
+        if env_value is None and alt_keys:
+            env_key = "OSINT_" + "_".join(k.upper() for k in alt_keys)
+            env_value = os.getenv(env_key)
 
         if env_value is not None:
             # Try to convert to original type
@@ -91,6 +103,8 @@ class ConfigLoader:
 
     def get_section(self, section):
         """Get entire configuration section"""
+        if section == "hub" and "hub" not in self._config and "coral" in self._config:
+            section = "coral"
         return self._config.get(section, {})
 
     def reload(self):

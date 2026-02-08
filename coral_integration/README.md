@@ -40,8 +40,8 @@ from coral_notifier import CoralNotifier
 # Manually specify hub URL
 notifier = CoralNotifier(
     platform='myplatform',
-    hub_url='http://localhost:5002/api/webhook/myplatform',
-    secret='optional-secret',
+    hub_url='http://localhost:3333/api/webhook/myplatform',
+    webhook_secret='optional-secret',
     auto_detect=False
 )
 
@@ -86,7 +86,7 @@ myplatform:
   standalone: false  # Set to true if you want standalone mode
   webhook:
     enabled: true
-    url: "http://localhost:5002/api/webhook/myplatform"
+    url: "http://localhost:3333/api/webhook/myplatform"
 ```
 
 ## 🔄 Manual Trigger API (Optional)

@@ -7,6 +7,10 @@ let state = {
     stats: {},
     maigretResults: null,
     maigretLoading: false,
+    maigretLinkUser: {
+        id: null,
+        name: ''
+    },
     monitorSettings: {
         monitor: null,
         path: '',
@@ -47,7 +51,10 @@ function switchTab(tabName) {
     if (tabName === 'instagram') loadPlatformEvents('instagram');
     else if (tabName === 'pinterest') loadPlatformEvents('pinterest');
     else if (tabName === 'spotify') loadPlatformEvents('spotify');
-    else if (tabName === 'maigret') renderMaigretResults();
+    else if (tabName === 'maigret') {
+        renderMaigretUserSelect();
+        renderMaigretResults();
+    }
     else if (tabName === 'settings') loadSettings();
 }
 
@@ -67,25 +74,39 @@ async function refreshData() {
 
 // API calls
 async function apiCall(endpoint, options = {}) {
+    const { silent, ...fetchOptions } = options;
     try {
         const response = await fetch(endpoint, {
-            ...options,
+            ...fetchOptions,
             headers: {
                 'Content-Type': 'application/json',
-                ...options.headers
+                ...fetchOptions.headers
             }
         });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.error || 'Request failed');
+
+        const text = await response.text();
+        let data = null;
+        if (text) {
+            try {
+                data = JSON.parse(text);
+            } catch (parseError) {
+                const message = response.ok
+                    ? 'Invalid response from server'
+                    : `Request failed (${response.status})`;
+                throw new Error(message);
+            }
         }
-        
-        return data;
+
+        if (!response.ok) {
+            throw new Error((data && data.error) || `Request failed (${response.status})`);
+        }
+
+        return data || {};
     } catch (error) {
         console.error('API Error:', error);
-        alert(`Error: ${error.message}`);
+        if (!silent) {
+            alert(`Error: ${error.message}`);
+        }
         throw error;
     }
 }
@@ -102,7 +123,7 @@ function renderStats() {
     statsEl.innerHTML = `
         <div class="stat-item">
             <div class="stat-value">${state.stats.total_persons || 0}</div>
-            <div class="stat-label">Persons</div>
+            <div class="stat-label">Users</div>
         </div>
         <div class="stat-item">
             <div class="stat-value">${state.stats.total_profiles || 0}</div>
@@ -119,6 +140,8 @@ function renderStats() {
 async function searchMaigret(event) {
     event.preventDefault();
 
+    const userSelect = document.getElementById('maigret-user');
+    const userId = userSelect ? userSelect.value : '';
     const username = document.getElementById('maigret-username').value.trim();
     const topSites = parseInt(document.getElementById('maigret-top-sites').value, 10);
     const timeout = parseInt(document.getElementById('maigret-timeout').value, 10);
@@ -131,6 +154,12 @@ async function searchMaigret(event) {
     const includeDisabled = document.getElementById('maigret-include-disabled').checked;
     const checkDomains = document.getElementById('maigret-check-domains').checked;
     const useCookies = document.getElementById('maigret-use-cookies').checked;
+    const selectedUser = userId
+        ? state.persons.find(person => person.id === parseInt(userId, 10))
+        : null;
+    state.maigretLinkUser = selectedUser
+        ? { id: selectedUser.id, name: selectedUser.name }
+        : { id: null, name: '' };
 
     if (!username) {
         alert('Username is required');
@@ -189,10 +218,14 @@ function setMaigretLoading(isLoading) {
     button.textContent = isLoading ? 'Searching...' : 'Search';
 }
 
-function startMaigretProgress() {
-    const container = document.getElementById('maigret-progress');
-    const bar = document.getElementById('maigret-progress-bar');
-    const text = document.getElementById('maigret-progress-text');
+function startMaigretProgress(
+    containerId = 'maigret-progress',
+    barId = 'maigret-progress-bar',
+    textId = 'maigret-progress-text'
+) {
+    const container = document.getElementById(containerId);
+    const bar = document.getElementById(barId);
+    const text = document.getElementById(textId);
     if (!container || !bar) return;
 
     container.classList.add('active');
@@ -213,10 +246,14 @@ function startMaigretProgress() {
     }, 700);
 }
 
-function stopMaigretProgress() {
-    const container = document.getElementById('maigret-progress');
-    const bar = document.getElementById('maigret-progress-bar');
-    const text = document.getElementById('maigret-progress-text');
+function stopMaigretProgress(
+    containerId = 'maigret-progress',
+    barId = 'maigret-progress-bar',
+    textId = 'maigret-progress-text'
+) {
+    const container = document.getElementById(containerId);
+    const bar = document.getElementById(barId);
+    const text = document.getElementById(textId);
     if (!container || !bar) return;
 
     if (maigretProgressTimer) {
@@ -235,25 +272,38 @@ function stopMaigretProgress() {
     }, 600);
 }
 
-function renderMaigretResults() {
-    const container = document.getElementById('maigret-results');
+function renderMaigretResults({
+    containerId = 'maigret-results',
+    results = state.maigretResults,
+    emptyMessage = 'Run a search to see results.',
+    contextLabel = null
+} = {}) {
+    const container = document.getElementById(containerId);
     if (!container) return;
 
-    if (!state.maigretResults) {
+    let resolvedContextLabel = contextLabel;
+    if (resolvedContextLabel === null || resolvedContextLabel === undefined) {
+        resolvedContextLabel = state.maigretLinkUser && state.maigretLinkUser.name
+            ? `Linked to user: ${state.maigretLinkUser.name}`
+            : null;
+    }
+
+    if (!results) {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">🔎</div>
-                <p>Run a search to see results.</p>
+                <p>${escapeHtml(emptyMessage)}</p>
             </div>
         `;
         return;
     }
 
-    const { username, stats, found, filters } = state.maigretResults;
+    const { username, stats, found, filters } = results;
     const duration = formatDuration(stats.duration_ms);
     const scopeSites = stats.scope_sites || stats.checked_sites || 0;
     const tags = (filters && filters.tags && filters.tags.length) ? filters.tags.join(', ') : null;
     const sites = (filters && filters.site_list && filters.site_list.length) ? filters.site_list.join(', ') : null;
+    const contextLine = resolvedContextLabel ? `<br>${escapeHtml(resolvedContextLabel)}` : '';
 
     if (!found || found.length === 0) {
         container.innerHTML = `
@@ -263,6 +313,7 @@ function renderMaigretResults() {
                     Checked ${stats.checked_sites} of ${scopeSites} sites in ${duration}.
                     ${tags ? `<br>Tags: ${escapeHtml(tags)}` : ''}
                     ${sites ? `<br>Sites: ${escapeHtml(sites)}` : ''}
+                    ${contextLine}
                 </div>
             </div>
             <div class="empty-state">
@@ -280,6 +331,7 @@ function renderMaigretResults() {
                 Found ${found.length} profiles across ${stats.checked_sites} of ${scopeSites} sites in ${duration}.
                 ${tags ? `<br>Tags: ${escapeHtml(tags)}` : ''}
                 ${sites ? `<br>Sites: ${escapeHtml(sites)}` : ''}
+                ${contextLine}
             </div>
         </div>
         <div class="results-grid">
@@ -303,6 +355,29 @@ function renderMaigretResults() {
     `;
 }
 
+function renderMaigretUserSelect() {
+    const select = document.getElementById('maigret-user');
+    if (!select) return;
+
+    if (state.persons.length === 0) {
+        select.innerHTML = '<option value="">No users available</option>';
+        select.disabled = true;
+        return;
+    }
+
+    select.disabled = false;
+    select.innerHTML = [
+        '<option value="">No user (optional)</option>',
+        ...state.persons.map(
+            person => `<option value="${person.id}">${escapeHtml(person.name)}</option>`
+        )
+    ].join('');
+
+    if (state.maigretLinkUser && state.maigretLinkUser.id) {
+        select.value = state.maigretLinkUser.id;
+    }
+}
+
 // Platforms
 async function loadPlatforms() {
     const data = await apiCall('/api/platforms');
@@ -314,6 +389,7 @@ async function loadPersons() {
     const data = await apiCall('/api/persons');
     state.persons = data.persons;
     renderPersons();
+    renderMaigretUserSelect();
 }
 
 function renderPersons() {
@@ -323,7 +399,7 @@ function renderPersons() {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">👤</div>
-                <p>No persons yet. Click "Add Person" to start monitoring.</p>
+                <p>No users yet. Click "Add User" to start monitoring.</p>
             </div>
         `;
         return;
@@ -463,7 +539,7 @@ function renderPersonsManager() {
     const container = document.getElementById('persons-manager');
     
     if (state.persons.length === 0) {
-        container.innerHTML = '<p class="help-text">No persons yet</p>';
+        container.innerHTML = '<p class="help-text">No users yet</p>';
         return;
     }
     
@@ -561,7 +637,7 @@ function instagramSessionApi(path, options = {}) {
 
 async function loadInstagramSession() {
     try {
-        const data = await instagramSessionApi('/session');
+        const data = await instagramSessionApi('/session', { silent: true });
         renderInstagramSession(data);
     } catch (error) {
         renderInstagramSession(null, error.message || 'Failed to load session');
@@ -617,7 +693,7 @@ async function loadInstagramFirefoxProfiles() {
     if (!select) return;
     select.innerHTML = '<option value="">Loading...</option>';
     try {
-        const data = await instagramSessionApi('/session/firefox/profiles');
+        const data = await instagramSessionApi('/session/firefox/profiles', { silent: true });
         if (!data.success || !data.profiles || data.profiles.length === 0) {
             select.innerHTML = '<option value="">No profiles found</option>';
             return;
@@ -715,7 +791,7 @@ function showAddPersonModal() {
     document.getElementById('person-id').value = '';
     document.getElementById('person-name').value = '';
     document.getElementById('person-notes').value = '';
-    document.getElementById('person-modal-title').textContent = 'Add Person';
+    document.getElementById('person-modal-title').textContent = 'Add User';
     openModal('person-modal');
 }
 
@@ -726,7 +802,7 @@ function editPerson(personId) {
     document.getElementById('person-id').value = person.id;
     document.getElementById('person-name').value = person.name;
     document.getElementById('person-notes').value = person.notes || '';
-    document.getElementById('person-modal-title').textContent = 'Edit Person';
+    document.getElementById('person-modal-title').textContent = 'Edit User';
     openModal('person-modal');
 }
 
@@ -755,7 +831,7 @@ async function savePerson(event) {
 }
 
 async function deletePerson(personId) {
-    if (!confirm('Delete this person and all their linked profiles?')) return;
+    if (!confirm('Delete this user and all their linked profiles?')) return;
     
     await apiCall(`/api/persons/${personId}`, { method: 'DELETE' });
     await loadPersons();

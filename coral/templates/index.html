@@ -18,8 +18,8 @@
         </header>
 
         <nav class="tabs">
-            <button class="tab active" data-tab="persons">Persons</button>
-            <button class="tab" data-tab="maigret">Search</button>
+            <button class="tab active" data-tab="persons">Users</button>
+            <button class="tab" data-tab="maigret">Maigret Search</button>
             <button class="tab" data-tab="instagram">Instagram</button>
             <button class="tab" data-tab="pinterest">Pinterest</button>
             <button class="tab" data-tab="spotify">Spotify</button>
@@ -27,16 +27,16 @@
         </nav>
 
         <main>
-            <!-- Persons Tab -->
+            <!-- Users Tab -->
             <div id="persons-tab" class="tab-content active">
                 <div class="section-header">
                     <div>
-                        <h2>Monitored Persons</h2>
-                        <p class="help-text">People you're tracking across platforms</p>
+                        <h2>Monitored Users</h2>
+                        <p class="help-text">Accounts you're tracking across platforms</p>
                     </div>
                     <div style="display: flex; gap: 8px;">
                         <button class="btn btn-secondary" onclick="triggerAllChecks()">🔄 Check All</button>
-                        <button class="btn btn-primary" onclick="showAddPersonModal()">+ Add Person</button>
+                        <button class="btn btn-primary" onclick="showAddPersonModal()">+ Add User</button>
                     </div>
                 </div>
                 <div id="persons-list" class="persons-grid"></div>
@@ -44,7 +44,7 @@
                 <div class="section-header" style="margin-top: 48px;">
                     <div>
                         <h2>Unlinked Events</h2>
-                        <p class="help-text">Activity not yet linked to any person</p>
+                        <p class="help-text">Activity not yet linked to any user</p>
                     </div>
                 </div>
                 <div id="unlinked-events" class="events-list"></div>
@@ -55,7 +55,7 @@
                 <div class="section-header">
                     <div>
                         <h2>Username Search</h2>
-                        <p class="help-text">Search public profiles with Maigret</p>
+                        <p class="help-text">Search public profiles with Maigret and optionally associate results with a user.</p>
                     </div>
                 </div>
 
@@ -64,6 +64,10 @@
                         <div class="form-group">
                             <label for="maigret-username">Username</label>
                             <input type="text" id="maigret-username" placeholder="e.g. johndoe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="maigret-user">Link to user (optional)</label>
+                            <select id="maigret-user"></select>
                         </div>
                         <div class="form-group">
                             <label for="maigret-top-sites">Scope</label>
@@ -82,6 +86,7 @@
                             <button id="maigret-search-btn" type="submit" class="btn btn-primary">Search</button>
                         </div>
                     </div>
+                    <p class="help-text">Choosing a user is optional; use the Users tab to link any profiles you want to track.</p>
 
                     <details class="advanced-settings">
                         <summary>Advanced settings</summary>
@@ -167,7 +172,7 @@
                 </section>
 
                 <section class="settings-section">
-                    <h3>Manage Persons</h3>
+                    <h3>Manage Users</h3>
                     <div id="persons-manager"></div>
                 </section>
 
@@ -234,22 +239,22 @@
         </main>
     </div>
 
-    <!-- Add/Edit Person Modal -->
+    <!-- Add/Edit User Modal -->
     <div id="person-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="person-modal-title">Add Person</h3>
+                <h3 id="person-modal-title">Add User</h3>
                 <span class="close" onclick="closeModal('person-modal')">&times;</span>
             </div>
             <form id="person-form" onsubmit="savePerson(event)">
                 <input type="hidden" id="person-id">
                 <div class="form-group">
                     <label for="person-name">Name</label>
-                    <input type="text" id="person-name" placeholder="Enter person's name" required>
+                    <input type="text" id="person-name" placeholder="Enter user's name" required>
                 </div>
                 <div class="form-group">
                     <label for="person-notes">Notes</label>
-                    <textarea id="person-notes" placeholder="Optional notes about this person"></textarea>
+                    <textarea id="person-notes" placeholder="Optional notes about this user"></textarea>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('person-modal')">Cancel</button>

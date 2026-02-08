@@ -50,7 +50,7 @@ docker-compose up -d
 ### How do I add a person to monitor?
 
 1. Start CORAL: `./start_all.sh`
-2. Open http://localhost:5002
+2. Open http://localhost:3333
 3. Go to Settings tab
 4. Click "Add Person"
 5. Enter name and link platform usernames
@@ -69,7 +69,7 @@ instagram:
 
 Yes! Three ways:
 1. Web UI → Settings → Click "Trigger" button
-2. Command line: `curl -X POST http://localhost:5002/api/trigger`
+2. Command line: `curl -X POST http://localhost:3333/api/trigger`
 3. Per platform: `curl -X POST http://localhost:8000/api/check-now`
 
 ### How do I export data?
@@ -94,7 +94,7 @@ CSV export feature coming soon!
 Edit `config.yaml`:
 ```yaml
 coral:
-  port: 5002  # Change to desired port
+  port: 3333  # Change to desired port
 ```
 
 Then restart: `./start_all.sh`
@@ -181,7 +181,7 @@ Yes! See [ADDING_NEW_MONITORS.md](ADDING_NEW_MONITORS.md) for a complete guide.
 ### Why isn't my monitor connecting to CORAL?
 
 Check:
-1. Is CORAL running? `curl http://localhost:5002/api/health`
+1. Is CORAL running? `curl http://localhost:3333/api/health`
 2. Is webhook URL correct in config.yaml?
 3. Check monitor logs: `tail -f /tmp/*_monitor.log`
 
@@ -221,7 +221,7 @@ Yes, but they'll need separate databases and ports. Easier to just run one insta
 
 ### CORAL won't start
 
-- Check port isn't in use: `lsof -ti:5002`
+- Check port isn't in use: `lsof -ti:3333`
 - Check logs: `tail -f /tmp/coral.log`
 - See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 

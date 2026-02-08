@@ -2,7 +2,7 @@
 
 ## CORAL Hub API
 
-Base URL: `http://localhost:5002`
+Base URL: `http://localhost:3333`
 
 ### Health Check
 

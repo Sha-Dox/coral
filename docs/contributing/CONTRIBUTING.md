@@ -52,7 +52,7 @@ twitter:
   port: 8002
   webhook:
     enabled: true
-    url: "http://localhost:5002/api/webhook/twitter"
+    url: "http://localhost:3333/api/webhook/twitter"
   trigger_url: "http://localhost:8002/api/check-now"
 ```
 
@@ -78,7 +78,7 @@ See [AI_AGENT_INTEGRATION.md](../integration/AI_AGENT_INTEGRATION.md) for detail
 - **Auto-detection**: `python3 demo_auto_detection.py`
 - **Integrated mode**: `./start_all.sh`
 - **Standalone mode**: `./start_monitor.sh <platform>`
-- **Web UI**: http://localhost:5002
+- **Web UI**: http://localhost:3333
 
 ## 📚 Documentation
 

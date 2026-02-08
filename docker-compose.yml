@@ -7,20 +7,20 @@ services:
       dockerfile: Dockerfile
     container_name: coral-hub
     ports:
-      - "5002:5002"
+      - "3333:3333"
     volumes:
       - ./data:/app/data
       - ./config.yaml:/app/config.yaml
       - ./logs:/app/logs
     environment:
-      - CORAL_PORT=5002
+      - CORAL_PORT=3333
       - CORAL_HOST=0.0.0.0
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
     networks:
       - coral-network
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5002/api/health')"]
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:3333/api/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -38,7 +38,7 @@ services:
       - ./logs:/app/logs
     environment:
       - PINTEREST_PORT=5001
-      - CORAL_URL=http://coral:5002
+      - CORAL_URL=http://coral:3333
       - PYTHONUNBUFFERED=1
     depends_on:
       - coral
@@ -59,7 +59,7 @@ services:
   #     - ./logs:/app/logs
   #   environment:
   #     - INSTAGRAM_PORT=8000
-  #     - CORAL_URL=http://coral:5002
+  #     - CORAL_URL=http://coral:3333
   #     - PYTHONUNBUFFERED=1
   #   depends_on:
   #     - coral
@@ -80,7 +80,7 @@ services:
   #     - ./logs:/app/logs
   #   environment:
   #     - SPOTIFY_PORT=8001
-  #     - CORAL_URL=http://coral:5002
+  #     - CORAL_URL=http://coral:3333
   #     - PYTHONUNBUFFERED=1
   #   depends_on:
   #     - coral

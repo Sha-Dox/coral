@@ -21,7 +21,7 @@
 # ============================================================
 coral:
   enabled: true                         # Set to false to disable CORAL entirely
-  port: 5002                            # Web UI port
+  port: 3456                            # Web UI port
   host: "0.0.0.0"                       # Listen on all interfaces
   debug: false                          # Enable debug mode
   database: "coral/coral.db"            # Database file path
@@ -37,7 +37,7 @@ instagram:
   check_interval: 300                   # Check every 5 minutes (seconds)
   webhook:
     enabled: true                       # Set false to force standalone mode
-    url: "http://localhost:5002/api/webhook/instagram"
+    url: "http://localhost:3333/api/webhook/instagram"
     secret: ""                          # Must match coral webhook_secret if set
   api:
     # Add Instagram API credentials here if needed
@@ -54,7 +54,7 @@ pinterest:
   check_interval: 300                   # Check every 5 minutes (seconds)
   webhook:
     enabled: true                       # Set false to force standalone mode
-    url: "http://localhost:5002/api/webhook/pinterest"
+    url: "http://localhost:3333/api/webhook/pinterest"
     secret: ""
   api:
     # Add Pinterest API credentials here if needed
@@ -70,7 +70,7 @@ spotify:
   check_interval: 300                   # Check every 5 minutes (seconds)
   webhook:
     enabled: true                       # Set false to force standalone mode
-    url: "http://localhost:5002/api/webhook/spotify"
+    url: "http://localhost:3333/api/webhook/spotify"
     secret: ""
   api:
     # Add Spotify API credentials here if needed
@@ -149,4 +149,3 @@ advanced:
     backup_enabled: true
     backup_interval_hours: 24
     backup_directory: "backups/"
-

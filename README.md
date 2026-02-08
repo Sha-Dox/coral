@@ -10,7 +10,7 @@
   
 </div>
 
----
+
 
 ## Quick Start
 
@@ -20,7 +20,7 @@
 ./start_monitors_only.sh          # All monitors, no hub
 ```
 
-Open http://localhost:5002 for the unified dashboard.
+Open http://localhost:3456 for the unified dashboard.
 
 ## Features
 
@@ -80,7 +80,7 @@ Edit `config.yaml`:
 ```yaml
 coral:
   enabled: true
-  port: 5002
+  port: 3333
 
 instagram:
   enabled: true
@@ -126,7 +126,7 @@ coral.enabled: true
 
 ```yaml
 coral:
-  port: 6000  # Change from 5002
+  port: 6000  # Change from 3333
 
 instagram:
   port: 9000  # Change from 8000
@@ -144,7 +144,7 @@ cd coral && python3 update_config.py && cd ..
 ```bash
 ./start_all.sh
 ```
-- Unified dashboard at http://localhost:5002
+- Unified dashboard at http://localhost:3333
 - Manual trigger buttons
 - Person linking across platforms
 - Timeline view of all events
@@ -170,7 +170,7 @@ cd coral && python3 update_config.py && cd ..
 ## Manual Triggers
 
 ### From Web UI
-1. Open http://localhost:5002
+1. Open http://localhost:3333
 2. Go to Settings tab
 3. Click "Trigger" button for any platform
 4. Or click "Trigger All Checks" on main page
@@ -178,7 +178,7 @@ cd coral && python3 update_config.py && cd ..
 ### From Command Line
 ```bash
 # Trigger all
-curl -X POST http://localhost:5002/api/trigger
+curl -X POST http://localhost:3333/api/trigger
 
 # Trigger specific platform
 curl -X POST http://localhost:8000/api/check-now  # Instagram
@@ -273,7 +273,7 @@ Each monitor exposes:
 
 Find and stop running services:
 ```bash
-lsof -ti:5002,5001,8000,8001
+lsof -ti:3333,5001,8000,8001
 ```
 
 Then stop each PID individually:
@@ -341,7 +341,7 @@ See [docs/contributing/CONTRIBUTING.md](docs/contributing/CONTRIBUTING.md) for g
 
 ---
 
-**Get Started**: `./start_all.sh` → http://localhost:5002
+**Get Started**: `./start_all.sh` → http://localhost:3333
 
 ## 📱 Example Monitors
 
