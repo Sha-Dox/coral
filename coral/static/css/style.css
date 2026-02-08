@@ -445,6 +445,10 @@ header h1 {
     box-shadow: var(--shadow-lg);
 }
 
+.modal-content.modal-wide {
+    max-width: 900px;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -537,6 +541,31 @@ form {
     padding-top: 20px;
     margin-top: 20px;
     border-top: 1px solid var(--border);
+}
+
+.monitor-settings-body {
+    padding: 24px;
+}
+
+.settings-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.config-textarea {
+    width: 100%;
+    min-height: 320px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    resize: vertical;
 }
 
 /* Settings sections */

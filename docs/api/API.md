@@ -296,6 +296,23 @@ These endpoints proxy to the Instagram monitor web dashboard so you can manage l
 **POST** `/api/instagram/session/refresh`  
 **POST** `/api/instagram/session/clear`
 
+---
+
+## Monitor Config Files
+
+Edit advanced monitor settings stored in their config files.
+
+**GET** `/api/monitor-config/<monitor>`
+
+Returns the current config file (or template if missing).
+
+**POST** `/api/monitor-config/<monitor>`
+```json
+{
+  "content": "...file contents..."
+}
+```
+
 ### Event Types
 
 Common event types:

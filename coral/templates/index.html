@@ -132,6 +132,7 @@
             <div id="instagram-tab" class="tab-content">
                 <div class="section-header">
                     <h2>Instagram Activity</h2>
+                    <button class="btn btn-secondary" onclick="openMonitorSettings('instagram')">Settings</button>
                 </div>
                 <div id="instagram-events" class="events-list"></div>
             </div>
@@ -140,6 +141,7 @@
             <div id="pinterest-tab" class="tab-content">
                 <div class="section-header">
                     <h2>Pinterest Activity</h2>
+                    <button class="btn btn-secondary" onclick="openMonitorSettings('pinterest')">Settings</button>
                 </div>
                 <div id="pinterest-events" class="events-list"></div>
             </div>
@@ -148,6 +150,7 @@
             <div id="spotify-tab" class="tab-content">
                 <div class="section-header">
                     <h2>Spotify Activity</h2>
+                    <button class="btn btn-secondary" onclick="openMonitorSettings('spotify')">Settings</button>
                 </div>
                 <div id="spotify-events" class="events-list"></div>
             </div>
@@ -278,6 +281,28 @@
                     <button type="submit" class="btn btn-primary">Link Profile</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Monitor Settings Modal -->
+    <div id="monitor-settings-modal" class="modal">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3 id="monitor-settings-title">Monitor Settings</h3>
+                <span class="close" onclick="closeModal('monitor-settings-modal')">&times;</span>
+            </div>
+            <div class="monitor-settings-body">
+                <div class="settings-meta">
+                    <div class="help-text" id="monitor-settings-path">Config path: -</div>
+                    <div class="help-text" id="monitor-settings-source">Source: -</div>
+                </div>
+                <textarea id="monitor-settings-content" class="config-textarea" spellcheck="false"></textarea>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="loadMonitorConfig()">Reload</button>
+                    <button type="button" class="btn btn-primary" onclick="saveMonitorConfig()">Save</button>
+                </div>
+                <p class="help-text">Changes are written to the monitor config file. Restart the monitor to apply.</p>
+            </div>
         </div>
     </div>
 

@@ -9,6 +9,7 @@ from pathlib import Path
 import asyncio
 import json
 import logging
+import re
 import sys
 
 import requests
@@ -219,6 +220,74 @@ def proxy_instagram_monitor_request(path, method="GET", data=None):
         )
 
     return jsonify(data), response.status_code
+
+
+def get_monitor_config_paths():
+    root = Path(__file__).resolve().parent.parent
+    return {
+        "instagram": {
+            "config_path": root / "instagram_monitor" / "instagram_monitor.conf",
+            "template_path": root / "instagram_monitor" / "instagram_monitor.py",
+            "template_type": "python_config_block",
+        },
+        "pinterest": {
+            "config_path": root / "pinterest_monitor" / "config.ini",
+            "template_path": root / "pinterest_monitor" / "config.example.ini",
+            "template_type": "ini_example",
+        },
+        "spotify": {
+            "config_path": root / "spotify_monitor" / "spotify_profile_monitor.conf",
+            "template_path": root / "spotify_monitor" / "spotify_monitor.py",
+            "template_type": "python_config_block",
+        },
+    }
+
+
+def load_python_config_block(path):
+    if not path.exists():
+        return None
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    match = re.search(r'CONFIG_BLOCK\s*=\s*"""(.*?)"""', text, re.S)
+    if not match:
+        return None
+    return match.group(1).strip("\n") + "\n"
+
+
+def load_monitor_template(entry):
+    template_path = entry["template_path"]
+    if entry["template_type"] == "ini_example":
+        return template_path.read_text(encoding="utf-8")
+    if entry["template_type"] == "python_config_block":
+        return load_python_config_block(template_path)
+    return None
+
+
+def read_monitor_config(monitor_name):
+    configs = get_monitor_config_paths()
+    entry = configs.get(monitor_name)
+    if not entry:
+        return None, None, None
+
+    config_path = entry["config_path"]
+    if config_path.exists():
+        return config_path.read_text(encoding="utf-8"), str(config_path), "file"
+
+    template = load_monitor_template(entry)
+    if template is None:
+        return None, str(config_path), "missing"
+
+    return template, str(config_path), "template"
+
+
+def write_monitor_config(monitor_name, content):
+    configs = get_monitor_config_paths()
+    entry = configs.get(monitor_name)
+    if not entry:
+        return False, None
+    config_path = entry["config_path"]
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(content, encoding="utf-8")
+    return True, str(config_path)
 
 
 @app.route("/")
@@ -796,6 +865,53 @@ def api_instagram_session_refresh():
 def api_instagram_session_clear():
     data = request.get_json(silent=True) or {}
     return proxy_instagram_monitor_request("/api/session/clear", "POST", data)
+
+
+@app.route("/api/monitor-config/<monitor_name>", methods=["GET", "POST"])
+def api_monitor_config(monitor_name):
+    monitor = monitor_name.strip().lower()
+    if request.method == "GET":
+        content, path, source = read_monitor_config(monitor)
+        if content is None:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Monitor config not available",
+                        "path": path,
+                    }
+                ),
+                404,
+            )
+        return jsonify(
+            {
+                "success": True,
+                "monitor": monitor,
+                "path": path,
+                "source": source,
+                "content": content,
+            }
+        )
+
+    data = request.get_json(silent=True) or {}
+    content = data.get("content")
+    if content is None:
+        return jsonify({"success": False, "error": "content is required"}), 400
+    if not isinstance(content, str):
+        return jsonify({"success": False, "error": "content must be a string"}), 400
+
+    success, path = write_monitor_config(monitor, content)
+    if not success:
+        return jsonify({"success": False, "error": "Unknown monitor"}), 404
+
+    return jsonify(
+        {
+            "success": True,
+            "monitor": monitor,
+            "path": path,
+            "message": "Config saved",
+        }
+    )
 
 
 @app.route("/api/health", methods=["GET"])

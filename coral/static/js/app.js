@@ -6,7 +6,13 @@ let state = {
     unlinkedEvents: [],
     stats: {},
     maigretResults: null,
-    maigretLoading: false
+    maigretLoading: false,
+    monitorSettings: {
+        monitor: null,
+        path: '',
+        source: '',
+        content: ''
+    }
 };
 
 let maigretProgressTimer = null;
@@ -654,6 +660,56 @@ async function clearInstagramSession() {
     await loadInstagramSession();
 }
 
+// Monitor config editor
+function openMonitorSettings(monitor) {
+    state.monitorSettings.monitor = monitor;
+    const title = document.getElementById('monitor-settings-title');
+    if (title) {
+        title.textContent = `${formatMonitorName(monitor)} Settings`;
+    }
+    openModal('monitor-settings-modal');
+    loadMonitorConfig();
+}
+
+async function loadMonitorConfig() {
+    const monitor = state.monitorSettings.monitor;
+    if (!monitor) return;
+
+    try {
+        const data = await apiCall(`/api/monitor-config/${monitor}`);
+        state.monitorSettings.path = data.path || '';
+        state.monitorSettings.source = data.source || '';
+        state.monitorSettings.content = data.content || '';
+
+        const contentEl = document.getElementById('monitor-settings-content');
+        const pathEl = document.getElementById('monitor-settings-path');
+        const sourceEl = document.getElementById('monitor-settings-source');
+        if (contentEl) contentEl.value = state.monitorSettings.content;
+        if (pathEl) pathEl.textContent = `Config path: ${state.monitorSettings.path || '-'}`;
+        if (sourceEl) sourceEl.textContent = `Source: ${state.monitorSettings.source || '-'}`;
+    } catch (error) {
+        const contentEl = document.getElementById('monitor-settings-content');
+        if (contentEl) {
+            contentEl.value = '';
+        }
+        alert(error.message || 'Failed to load monitor config');
+    }
+}
+
+async function saveMonitorConfig() {
+    const monitor = state.monitorSettings.monitor;
+    if (!monitor) return;
+
+    const contentEl = document.getElementById('monitor-settings-content');
+    const content = contentEl ? contentEl.value : '';
+    await apiCall(`/api/monitor-config/${monitor}`, {
+        method: 'POST',
+        body: JSON.stringify({ content })
+    });
+    await loadMonitorConfig();
+    alert('Config saved. Restart the monitor to apply changes.');
+}
+
 // Person modals
 function showAddPersonModal() {
     document.getElementById('person-id').value = '';
@@ -761,6 +817,11 @@ function getPlatformIcon(platformName) {
         spotify: '🎵'
     };
     return icons[platformName] || '📱';
+}
+
+function formatMonitorName(name) {
+    if (!name) return '';
+    return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 function formatTimeAgo(timestamp) {
