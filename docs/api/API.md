@@ -267,6 +267,35 @@ notifier.send_event(
 )
 ```
 
+---
+
+## Instagram Monitor Session Proxy
+
+These endpoints proxy to the Instagram monitor web dashboard so you can manage login from the CORAL hub UI.
+
+**GET** `/api/instagram/session?base_url=http://localhost:8000`
+
+**POST** `/api/instagram/session`
+```json
+{
+  "base_url": "http://localhost:8000",
+  "username": "insta_user",
+  "method": "session"
+}
+```
+
+**POST** `/api/instagram/session/firefox/import`
+```json
+{
+  "base_url": "http://localhost:8000",
+  "path": "/path/to/cookies.sqlite"
+}
+```
+
+**POST** `/api/instagram/session/test`  
+**POST** `/api/instagram/session/refresh`  
+**POST** `/api/instagram/session/clear`
+
 ### Event Types
 
 Common event types:

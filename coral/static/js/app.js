@@ -438,6 +438,8 @@ async function loadSettings() {
     renderWebhookInfo();
     renderPersonsManager();
     renderPlatformsConfig();
+    loadInstagramSession();
+    loadInstagramFirefoxProfiles();
 }
 
 function renderWebhookInfo() {
@@ -532,6 +534,124 @@ function renderPlatformsConfig() {
             </tbody>
         </table>
     `;
+}
+
+// Instagram session management
+function getInstagramBaseUrl() {
+    const input = document.getElementById('instagram-session-base-url');
+    if (!input) return 'http://localhost:8000';
+    let base = input.value.trim() || input.placeholder || 'http://localhost:8000';
+    if (!base.startsWith('http://') && !base.startsWith('https://')) {
+        base = `http://${base}`;
+    }
+    return base.replace(/\/+$/, '');
+}
+
+function instagramSessionApi(path, options = {}) {
+    const baseUrl = encodeURIComponent(getInstagramBaseUrl());
+    const url = `/api/instagram${path}?base_url=${baseUrl}`;
+    return apiCall(url, options);
+}
+
+async function loadInstagramSession() {
+    try {
+        const data = await instagramSessionApi('/session');
+        renderInstagramSession(data);
+    } catch (error) {
+        renderInstagramSession(null, error.message || 'Failed to load session');
+    }
+}
+
+function renderInstagramSession(data, errorMessage) {
+    const badge = document.getElementById('instagram-session-badge');
+    const text = document.getElementById('instagram-session-text');
+    const meta = document.getElementById('instagram-session-meta');
+    if (!badge || !text || !meta) return;
+
+    if (!data) {
+        badge.textContent = 'Error';
+        badge.className = 'status-badge status-error';
+        text.textContent = errorMessage || 'Failed to load';
+        meta.textContent = '';
+        return;
+    }
+
+    const active = data.active === true;
+    const username = data.username ? `@${data.username}` : 'No session configured';
+    badge.textContent = active ? 'Active' : 'Inactive';
+    badge.className = `status-badge ${active ? 'status-active' : 'status-idle'}`;
+    text.textContent = username;
+
+    const details = [];
+    if (data.method) details.push(`Method: ${data.method}`);
+    if (data.file_path) details.push(`File: ${data.file_path}`);
+    if (data.file_size_human) details.push(`Size: ${data.file_size_human}`);
+    if (data.last_modified_relative) details.push(`Updated: ${data.last_modified_relative}`);
+    meta.textContent = details.join(' • ');
+}
+
+async function setInstagramSession() {
+    const usernameInput = document.getElementById('instagram-session-username');
+    const methodSelect = document.getElementById('instagram-session-method');
+    const username = usernameInput ? usernameInput.value.trim() : '';
+    const method = methodSelect ? methodSelect.value : 'session';
+    if (!username) {
+        alert('Session username is required');
+        return;
+    }
+    await instagramSessionApi('/session', {
+        method: 'POST',
+        body: JSON.stringify({ username, method })
+    });
+    await loadInstagramSession();
+}
+
+async function loadInstagramFirefoxProfiles() {
+    const select = document.getElementById('instagram-firefox-profile');
+    if (!select) return;
+    select.innerHTML = '<option value="">Loading...</option>';
+    try {
+        const data = await instagramSessionApi('/session/firefox/profiles');
+        if (!data.success || !data.profiles || data.profiles.length === 0) {
+            select.innerHTML = '<option value="">No profiles found</option>';
+            return;
+        }
+        select.innerHTML = data.profiles
+            .map(profile => `<option value="${profile.path}">${profile.name}</option>`)
+            .join('');
+    } catch (error) {
+        select.innerHTML = '<option value="">Failed to load profiles</option>';
+    }
+}
+
+async function importInstagramFirefoxSession() {
+    const select = document.getElementById('instagram-firefox-profile');
+    const path = select ? select.value : '';
+    if (!path) {
+        alert('Select a Firefox profile first');
+        return;
+    }
+    await instagramSessionApi('/session/firefox/import', {
+        method: 'POST',
+        body: JSON.stringify({ path })
+    });
+    await loadInstagramSession();
+}
+
+async function testInstagramSession() {
+    await instagramSessionApi('/session/test', { method: 'POST', body: JSON.stringify({}) });
+    await loadInstagramSession();
+}
+
+async function refreshInstagramSession() {
+    await instagramSessionApi('/session/refresh', { method: 'POST', body: JSON.stringify({}) });
+    await loadInstagramSession();
+}
+
+async function clearInstagramSession() {
+    if (!confirm('Clear the current Instagram session?')) return;
+    await instagramSessionApi('/session/clear', { method: 'POST', body: JSON.stringify({}) });
+    await loadInstagramSession();
 }
 
 // Person modals

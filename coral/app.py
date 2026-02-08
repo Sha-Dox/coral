@@ -11,8 +11,11 @@ import json
 import logging
 import sys
 
+import requests
+
 import config
 import database as db
+from config_loader import config as hub_config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -141,10 +144,89 @@ def run_maigret_search(
     return results, len(sites)
 
 
+def normalize_base_url(raw):
+    if not raw:
+        return None
+    base = str(raw).strip()
+    if not base:
+        return None
+    if not base.startswith(("http://", "https://")):
+        base = f"http://{base}"
+    return base.rstrip("/")
+
+
+def default_instagram_base_url():
+    configured = hub_config.get("instagram.base_url")
+    if configured:
+        return normalize_base_url(configured)
+    host = hub_config.get("instagram.host", "localhost")
+    port = hub_config.get("instagram.port", 8000)
+    return normalize_base_url(f"{host}:{port}")
+
+
+def get_instagram_monitor_base_url(data=None):
+    base = None
+    if isinstance(data, dict):
+        base = data.get("base_url")
+    if not base:
+        base = request.args.get("base_url")
+    base = normalize_base_url(base) or default_instagram_base_url()
+    return base
+
+
+def proxy_instagram_monitor_request(path, method="GET", data=None):
+    base_url = get_instagram_monitor_base_url(data)
+    if not base_url:
+        return (
+            jsonify({"success": False, "error": "Instagram monitor URL missing"}),
+            400,
+        )
+
+    url = f"{base_url}{path}"
+    payload = data.copy() if isinstance(data, dict) else None
+    if payload and "base_url" in payload:
+        payload.pop("base_url", None)
+
+    try:
+        response = requests.request(
+            method,
+            url,
+            json=payload if method != "GET" else None,
+            timeout=15,
+        )
+    except requests.RequestException as exc:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": f"Could not reach Instagram monitor: {exc}",
+                }
+            ),
+            502,
+        )
+
+    try:
+        data = response.json()
+    except ValueError:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Invalid response from Instagram monitor",
+                }
+            ),
+            502,
+        )
+
+    return jsonify(data), response.status_code
+
+
 @app.route("/")
 def index():
     """Main dashboard page"""
-    return render_template("index.html")
+    return render_template(
+        "index.html", instagram_base_url=default_instagram_base_url()
+    )
 
 
 # Webhook API
@@ -679,6 +761,41 @@ def api_maigret_search():
     except Exception as e:
         logger.error(f"Error running maigret search: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/instagram/session", methods=["GET", "POST"])
+def api_instagram_session():
+    data = request.get_json(silent=True) if request.method == "POST" else None
+    return proxy_instagram_monitor_request("/api/session", request.method, data)
+
+
+@app.route("/api/instagram/session/firefox/profiles", methods=["GET"])
+def api_instagram_firefox_profiles():
+    return proxy_instagram_monitor_request("/api/session/firefox/profiles", "GET")
+
+
+@app.route("/api/instagram/session/firefox/import", methods=["POST"])
+def api_instagram_firefox_import():
+    data = request.get_json(silent=True) or {}
+    return proxy_instagram_monitor_request("/api/session/firefox/import", "POST", data)
+
+
+@app.route("/api/instagram/session/test", methods=["POST"])
+def api_instagram_session_test():
+    data = request.get_json(silent=True) or {}
+    return proxy_instagram_monitor_request("/api/session/test", "POST", data)
+
+
+@app.route("/api/instagram/session/refresh", methods=["POST"])
+def api_instagram_session_refresh():
+    data = request.get_json(silent=True) or {}
+    return proxy_instagram_monitor_request("/api/session/refresh", "POST", data)
+
+
+@app.route("/api/instagram/session/clear", methods=["POST"])
+def api_instagram_session_clear():
+    data = request.get_json(silent=True) or {}
+    return proxy_instagram_monitor_request("/api/session/clear", "POST", data)
 
 
 @app.route("/api/health", methods=["GET"])

@@ -172,6 +172,61 @@
                     <h3>Platform Configuration</h3>
                     <div id="platforms-config"></div>
                 </section>
+
+                <section class="settings-section">
+                    <h3>Instagram Session</h3>
+                    <p class="help-text">Manage Instagram login via session file or Firefox cookies.</p>
+
+                    <div class="session-grid">
+                        <div class="form-group">
+                            <label for="instagram-session-base-url">Monitor URL</label>
+                            <input type="text" id="instagram-session-base-url" value="{{ instagram_base_url }}" placeholder="http://localhost:8000">
+                        </div>
+                        <div class="form-group">
+                            <label for="instagram-session-username">Session Username</label>
+                            <input type="text" id="instagram-session-username" placeholder="Instagram username">
+                        </div>
+                        <div class="form-group">
+                            <label for="instagram-session-method">Method</label>
+                            <select id="instagram-session-method">
+                                <option value="session" selected>Session file</option>
+                                <option value="firefox">Firefox cookies</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-primary" onclick="setInstagramSession()">Set Session</button>
+                        </div>
+                    </div>
+
+                    <div class="session-actions">
+                        <button class="btn btn-secondary" onclick="loadInstagramSession()">Refresh Status</button>
+                        <button class="btn btn-secondary" onclick="testInstagramSession()">Test</button>
+                        <button class="btn btn-secondary" onclick="refreshInstagramSession()">Re-auth</button>
+                        <button class="btn btn-danger" onclick="clearInstagramSession()">Clear</button>
+                    </div>
+
+                    <div class="session-status">
+                        <span class="status-badge status-idle" id="instagram-session-badge">Unknown</span>
+                        <span id="instagram-session-text">Not loaded</span>
+                        <div class="help-text" id="instagram-session-meta"></div>
+                    </div>
+
+                    <div class="session-grid">
+                        <div class="form-group">
+                            <label for="instagram-firefox-profile">Firefox profile</label>
+                            <select id="instagram-firefox-profile"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-secondary" onclick="loadInstagramFirefoxProfiles()">Load Profiles</button>
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-primary" onclick="importInstagramFirefoxSession()">Import Cookies</button>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
