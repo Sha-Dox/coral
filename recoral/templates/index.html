@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORAL</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ v }}">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CORAL">
+            <span>CORAL</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-item active" data-view="dashboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Dashboard</span>
+            </a>
+            <a class="nav-item" data-view="identities">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Identities</span>
+            </a>
+            <a class="nav-item" data-view="activity">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Activity</span>
+            </a>
+            <a class="nav-item" data-view="search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Search</span>
+            </a>
+            <a class="nav-item" data-view="settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Settings</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="check-all-btn" onclick="App.checkAll()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                <span>Check All</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <!-- Dashboard -->
+        <section id="view-dashboard" class="view active">
+            <div class="view-header"><h1>Dashboard</h1></div>
+            <div class="stats-row" id="stats-row"></div>
+            <div class="panel">
+                <div class="panel-header"><h2>Recent Activity</h2></div>
+                <div id="recent-events" class="event-feed"></div>
+            </div>
+        </section>
+
+        <!-- Identities -->
+        <section id="view-identities" class="view">
+            <div class="view-header">
+                <h1>Identities</h1>
+                <button class="btn btn-primary" onclick="App.showAddIdentity()">+ New Identity</button>
+            </div>
+            <div id="identities-grid" class="identity-grid"></div>
+        </section>
+
+        <!-- Identity Detail -->
+        <section id="view-identity-detail" class="view">
+            <div class="view-header">
+                <button class="btn btn-ghost" onclick="App.navigate('identities')">&larr; Back</button>
+                <div class="identity-detail-actions" id="identity-detail-actions"></div>
+            </div>
+            <div id="identity-detail-content"></div>
+        </section>
+
+        <!-- Activity -->
+        <section id="view-activity" class="view">
+            <div class="view-header">
+                <h1>Activity</h1>
+                <div class="filter-row">
+                    <select id="activity-platform-filter" onchange="App.loadActivity()">
+                        <option value="">All Platforms</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="pinterest">Pinterest</option>
+                        <option value="spotify">Spotify</option>
+                    </select>
+                </div>
+            </div>
+            <div id="activity-feed" class="event-feed panel"></div>
+            <div id="activity-pagination" class="pagination"></div>
+        </section>
+
+        <!-- Search -->
+        <section id="view-search" class="view">
+            <div class="view-header"><h1>Username Search</h1></div>
+            <form id="search-form" class="search-form" onsubmit="App.searchMaigret(event)">
+                <div class="search-bar">
+                    <input type="text" id="search-username" placeholder="Enter a username..." required>
+                    <select id="search-scope">
+                        <option value="200">Fast (200 sites)</option>
+                        <option value="500" selected>Standard (500 sites)</option>
+                        <option value="2000">Deep (2000 sites)</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary" id="search-btn">Search</button>
+                </div>
+                <details class="search-advanced">
+                    <summary>Advanced options</summary>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Timeout (s)</label>
+                            <input type="number" id="search-timeout" min="3" max="60" value="5">
+                        </div>
+                        <div class="form-field">
+                            <label>Max connections</label>
+                            <input type="number" id="search-max-conn" min="1" max="200" value="50">
+                        </div>
+                        <div class="form-field">
+                            <label>Tags</label>
+                            <input type="text" id="search-tags" placeholder="social, coding">
+                        </div>
+                    </div>
+                    <div class="check-row">
+                        <label><input type="checkbox" id="search-all-sites"> All sites</label>
+                        <label><input type="checkbox" id="search-disabled"> Include disabled</label>
+                        <label><input type="checkbox" id="search-cookies"> Use cookies.txt</label>
+                    </div>
+                </details>
+            </form>
+            <div id="search-progress" class="progress-wrap">
+                <div class="progress-track"><div class="progress-fill" id="search-progress-bar"></div></div>
+                <span class="progress-label" id="search-progress-text"></span>
+            </div>
+            <div id="search-results"></div>
+        </section>
+
+        <!-- Settings -->
+        <section id="view-settings" class="view">
+            <div class="view-header"><h1>Settings</h1></div>
+            <div class="settings-grid">
+                <div class="settings-section">
+                    <div class="settings-section-title">Monitoring</div>
+                    <div class="settings-card">
+                        <div class="form-field">
+                            <label>Check Interval <span class="hint">(seconds)</span></label>
+                            <input type="number" id="setting-check-interval" min="30" max="86400" placeholder="300">
+                            <div class="field-hint">How often CORAL checks all accounts. Minimum 30s.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-section-title">Notifications</div>
+                    <div class="settings-card">
+                        <div class="form-field">
+                            <label>
+                                <span class="toggle-wrap">
+                                    <input type="checkbox" id="setting-notifications-enabled" checked>
+                                    Enable Notifications
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-field">
+                            <label>Discord Webhook URL</label>
+                            <input type="url" id="setting-discord-webhook" placeholder="https://discord.com/api/webhooks/...">
+                        </div>
+                        <div class="form-field">
+                            <label>ntfy Topic</label>
+                            <input type="text" id="setting-ntfy-topic" placeholder="coral-alerts">
+                        </div>
+                        <div class="form-field">
+                            <label>ntfy Server <span class="hint">(default: ntfy.sh)</span></label>
+                            <input type="url" id="setting-ntfy-server" placeholder="https://ntfy.sh">
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="App.testNotification()" id="test-notif-btn">Test Notification</button>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-section-title">Instagram</div>
+                    <div class="settings-card">
+                        <div class="form-field">
+                            <label>Global Session Username</label>
+                            <input type="text" id="setting-instagram-session" placeholder="your_ig_login_username">
+                            <div class="field-hint">The IG account used for monitoring. Import from your browser or set up manually.</div>
+                        </div>
+                        <div class="form-field" style="margin-top:12px">
+                            <label>Import session from browser</label>
+                            <div class="field-hint" style="margin-bottom:8px">Log into instagram.com in your browser, then click to import the session automatically.</div>
+                            <div style="display:flex;gap:8px">
+                                <button class="btn btn-ghost btn-sm" id="import-chrome-btn" onclick="App.importIgSession('chrome')">Import from Chrome</button>
+                                <button class="btn btn-ghost btn-sm" id="import-firefox-btn" onclick="App.importIgSession('firefox')">Import from Firefox</button>
+                            </div>
+                            <div id="ig-import-status" class="field-hint" style="margin-top:8px"></div>
+                        </div>
+                        <div class="form-field" style="margin-top:12px">
+                            <label>Manual setup <span class="hint">(fallback)</span></label>
+                            <div class="field-hint">If browser import doesn't work, run this in terminal:</div>
+                            <div class="cmd-block">
+                                <code id="ig-cmd-text">instaloader --login USERNAME</code>
+                                <button type="button" class="cmd-copy" onclick="App.copyCmd('ig-cmd-text')" title="Copy">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-section-title">Spotify</div>
+                    <div class="settings-card">
+                        <div class="form-field">
+                            <label>Global sp_dc Cookie</label>
+                            <input type="password" id="setting-sp-dc-cookie" placeholder="AQDLs29f..." autocomplete="off">
+                            <div class="field-hint">Cookie from open.spotify.com. Fallback for accounts without their own.</div>
+                        </div>
+                        <div class="form-field" style="margin-top:12px">
+                            <label>Import from browser</label>
+                            <div class="field-hint" style="margin-bottom:8px">Log into open.spotify.com in your browser, then click to import the sp_dc cookie.</div>
+                            <div style="display:flex;gap:8px">
+                                <button class="btn btn-ghost btn-sm" id="import-spotify-chrome-btn" onclick="App.importSpotifyCookie('chrome')">Import from Chrome</button>
+                                <button class="btn btn-ghost btn-sm" id="import-spotify-firefox-btn" onclick="App.importSpotifyCookie('firefox')">Import from Firefox</button>
+                            </div>
+                            <div id="spotify-import-status" class="field-hint" style="margin-top:8px"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-actions">
+                    <button class="btn btn-primary" onclick="App.saveSettings()">Save Settings</button>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-section-title">App Info</div>
+                    <div class="settings-card info-card" id="settings-info"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Identity Modal -->
+    <div id="modal-identity" class="modal-overlay" onclick="App.closeModalOverlay(event, 'modal-identity')">
+        <div class="modal">
+            <div class="modal-head">
+                <h3 id="modal-identity-title">New Identity</h3>
+                <button class="modal-close" onclick="App.closeModal('modal-identity')">&times;</button>
+            </div>
+            <form onsubmit="App.saveIdentity(event)">
+                <input type="hidden" id="identity-edit-id">
+                <div class="form-field">
+                    <label>Name</label>
+                    <input type="text" id="identity-name" placeholder="Display name" required>
+                </div>
+                <div class="form-field">
+                    <label>Notes</label>
+                    <textarea id="identity-notes" placeholder="Optional notes"></textarea>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-ghost" onclick="App.closeModal('modal-identity')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Account Modal -->
+    <div id="modal-account" class="modal-overlay" onclick="App.closeModalOverlay(event, 'modal-account')">
+        <div class="modal">
+            <div class="modal-head">
+                <h3>Add Account</h3>
+                <button class="modal-close" onclick="App.closeModal('modal-account')">&times;</button>
+            </div>
+            <form onsubmit="App.saveAccount(event)">
+                <input type="hidden" id="account-identity-id">
+                <div class="form-field">
+                    <label>Platform</label>
+                    <div class="platform-picker" id="platform-picker">
+                        <button type="button" class="platform-opt" data-platform="instagram" onclick="App.pickPlatform('instagram')">
+                            <span class="platform-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg></span>
+                            Instagram
+                        </button>
+                        <button type="button" class="platform-opt" data-platform="pinterest" onclick="App.pickPlatform('pinterest')">
+                            <span class="platform-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.04-2.83.18-.78 1.17-4.97 1.17-4.97s-.3-.6-.3-1.48c0-1.39.81-2.43 1.81-2.43.86 0 1.27.64 1.27 1.41 0 .86-.55 2.15-.83 3.34-.24 1 .5 1.81 1.48 1.81 1.78 0 3.14-1.87 3.14-4.58 0-2.4-1.72-4.07-4.18-4.07-2.85 0-4.52 2.14-4.52 4.35 0 .86.33 1.78.75 2.28.08.1.09.19.07.29-.08.31-.25 1-.28 1.14-.05.19-.15.23-.35.14-1.31-.61-2.13-2.52-2.13-4.06 0-3.31 2.41-6.35 6.94-6.35 3.64 0 6.48 2.6 6.48 6.07 0 3.62-2.28 6.53-5.45 6.53-1.06 0-2.07-.55-2.41-1.21l-.66 2.5c-.24.91-.88 2.06-1.31 2.75A10 10 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg></span>
+                            Pinterest
+                        </button>
+                        <button type="button" class="platform-opt" data-platform="spotify" onclick="App.pickPlatform('spotify')">
+                            <span class="platform-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 15c3-1 6-1 9 1"/><path d="M7 12c4-1.5 8-1.5 12 1"/><path d="M6.5 9c5-2 10-2 15 1"/></svg></span>
+                            Spotify
+                        </button>
+                    </div>
+                    <input type="hidden" id="account-platform" required>
+                </div>
+                <div class="form-field">
+                    <label>Username</label>
+                    <input type="text" id="account-username" placeholder="e.g. johndoe" required>
+                </div>
+                <div class="form-field" id="instagram-config-field" style="display:none">
+                    <label>Session username <span class="hint">(uses global if empty)</span></label>
+                    <input type="text" id="account-ig-session" placeholder="your_ig_login_username">
+                    <div class="field-hint">Leave empty to use the global session from Settings. Or import from browser:</div>
+                    <div style="display:flex;gap:8px;margin-top:6px">
+                        <button type="button" class="btn btn-ghost btn-xs" onclick="App.importIgSession('chrome')">Chrome</button>
+                        <button type="button" class="btn btn-ghost btn-xs" onclick="App.importIgSession('firefox')">Firefox</button>
+                    </div>
+                </div>
+                <div class="form-field" id="spotify-config-field" style="display:none">
+                    <label>sp_dc Cookie <span class="hint">(uses global if empty)</span></label>
+                    <input type="text" id="account-sp-dc" placeholder="sp_dc cookie value">
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-ghost" onclick="App.closeModal('modal-account')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div id="modal-event" class="modal-overlay" onclick="App.closeModalOverlay(event, 'modal-event')">
+        <div class="modal modal-wide">
+            <div class="modal-head">
+                <h3>Event Detail</h3>
+                <button class="modal-close" onclick="App.closeModal('modal-event')">&times;</button>
+            </div>
+            <div id="event-detail-content" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Link Search Result Modal -->
+    <div id="modal-link" class="modal-overlay" onclick="App.closeModalOverlay(event, 'modal-link')">
+        <div class="modal">
+            <div class="modal-head">
+                <h3>Link to Identity</h3>
+                <button class="modal-close" onclick="App.closeModal('modal-link')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="link-platform">
+                <input type="hidden" id="link-username">
+                <div class="form-field">
+                    <label>Select Identity</label>
+                    <select id="link-identity-select" class="full-select"></select>
+                </div>
+                <div class="modal-foot">
+                    <button class="btn btn-ghost" onclick="App.closeModal('modal-link')">Cancel</button>
+                    <button class="btn btn-primary" onclick="App.confirmLink()">Link Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}?v={{ v }}"></script>
+</body>
+</html>

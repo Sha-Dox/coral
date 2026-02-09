@@ -1,7 +1,0 @@
-include README.md
-include LICENSE
-include requirements.txt
-include config.example.ini
-include start.sh
-recursive-include templates *
-recursive-include static *

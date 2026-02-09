@@ -1,354 +1,109 @@
 <div align="center">
-  <img src="logos/banner.png" alt="CORAL Banner" width="100%">
-  
-  # CORAL - Centralised OSINT Repository and Automation Layer
-  
-  <p>A flexible monitoring dashboard that consolidates multiple OSINT tools (Instagram, Pinterest, Spotify) into a single interface - or run each tool independently.</p>
-  
-  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-  [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-  
+  <img src="logos/banner.png" alt="coral" width="100%">
 </div>
 
+# coral
 
+monitor social accounts, track changes, get a timeline.
 
-## Quick Start
+one app. instagram, pinterest, spotify. more later.
+
+## what it does
+
+you create identities (people), link their social accounts, and coral watches them. it checks on a schedule, diffs the data, and logs what changed — new followers, bio updates, new pins, unfollows. everything shows up on a timeline.
+
+built-in username search powered by maigret scans hundreds of sites for matching profiles.
+
+## install
 
 ```bash
-git clone https://github.com/Sha-Dox/coral.git
+curl -fsSL https://raw.githubusercontent.com/alfaoz/coral/main/install.sh | bash
+```
+
+or manually:
+
+```bash
+git clone https://github.com/alfaoz/coral.git
 cd coral
-./setup.sh
-./start_all.sh
+pip install -r recoral/requirements.txt
+cp .env.example .env
+python3 recoral/app.py
 ```
+
+open http://localhost:3456
+
+## setup
+
+### instagram
+
+requires a logged-in instaloader session.
 
 ```bash
-# Other options
-./start_monitor.sh instagram      # Start one monitor
-./start_monitors_only.sh          # All monitors, no hub
+instaloader --login YOUR_USERNAME
 ```
 
-Open http://localhost:3456 for the unified dashboard.
+then either set it globally in settings, or per-account when adding an instagram monitor.
 
-## Features
+### spotify
 
-- **Unified Dashboard** - Monitor all platforms in one place
-- **Auto-Detection** - Monitors auto-detect CORAL (<500ms)
-- **Standalone Mode** - Use each tool independently
-- **Central Config** - One `config.yaml` for everything
-- **Manual Triggers** - Check all platforms instantly
-- **Person Linking** - Link profiles across platforms
-- **Username Search** - Maigret-powered user discovery
-- **Dark Theme** - Beautiful responsive UI
+grab your `sp_dc` cookie from open.spotify.com (browser devtools → application → cookies). paste it in settings or per-account.
 
-## Project Layout
+### pinterest
 
-- `coral/` - CORAL hub (web UI + API)
-- `coral_integration/` - Integration helpers
-- `instagram_monitor/` - Instagram monitor (standalone)
-- `pinterest_monitor/` - Pinterest monitor (standalone)
-- `spotify_monitor/` - Spotify monitor (standalone)
-- `config.yaml` - Central configuration
-- `start_*.sh` - Run scripts
-- `docs/` - Documentation (API, guides, contributing, integration)
+works out of the box. no auth needed.
 
-## Installation
-
-### Local (recommended)
-```bash
-./setup.sh
-nano config.yaml
-./start_all.sh
-```
-Note: the Username Search tab uses Maigret. If you install manually, run `pip3 install maigret`.
-
-### Docker
-```bash
-docker-compose up -d
-```
-
-### Manual (pip)
-```bash
-# Install dependencies
-cd coral
-pip3 install -r requirements.txt
-cd ..
-
-# Configure
-nano config.yaml  # Edit settings
-
-# Start
-./start_all.sh
-```
-
-## Configuration
-
-Edit `config.yaml`:
-
-```yaml
-coral:
-  enabled: true
-  port: 3456
-
-instagram:
-  enabled: true
-  port: 8000
-  webhook:
-    enabled: true
-
-pinterest:
-  enabled: true
-  port: 5001
-
-spotify:
-  enabled: true
-  port: 8001
-```
-
-### Common Configurations
-
-**Run standalone Instagram only:**
-```yaml
-coral.enabled: false
-instagram.enabled: true
-instagram.standalone: true
-pinterest.enabled: false
-spotify.enabled: false
-```
-
-**Run all monitors independently:**
-```yaml
-coral.enabled: false
-instagram.standalone: true
-pinterest.standalone: true
-spotify.standalone: true
-```
-
-**Full integrated system:**
-```yaml
-coral.enabled: true
-# All webhooks enabled by default
-```
-
-### Change Ports
-
-```yaml
-coral:
-  port: 6000  # Change from 3456
-
-instagram:
-  port: 9000  # Change from 8000
-```
-
-Then restart services:
-```bash
-./start_all.sh
-```
-CORAL syncs platform trigger URLs on startup (optional: `python3 coral/update_config.py`).
-
-## Usage Modes
-
-### Integrated Mode (Hub + Monitors)
-```bash
-./start_all.sh
-```
-- Unified dashboard at http://localhost:3456
-- Manual trigger buttons
-- Person linking across platforms
-- Timeline view of all events
-
-### Standalone Mode (Independent Monitors)
-```bash
-./start_monitor.sh instagram  # Just Instagram
-./start_monitor.sh pinterest  # Just Pinterest  
-./start_monitor.sh spotify    # Just Spotify
-```
-- Zero dependencies on hub
-- Original functionality preserved
-- Works if hub is down
-
-### Mixed Mode (All Monitors, No Hub)
-```bash
-./start_monitors_only.sh
-```
-- All monitors active
-- No central dashboard
-- Independent databases
-
-## Manual Triggers
-
-### From Web UI
-1. Open http://localhost:3456
-2. Go to Settings tab
-3. Click "Trigger" button for any platform
-4. Or click "Trigger All Checks" on main page
-
-### From Command Line
-```bash
-# Trigger from hub (per-platform)
-curl -X POST http://localhost:3456/api/platforms/<id>/trigger
-
-# Trigger via monitor APIs
-curl -X POST http://localhost:8000/api/trigger-check  # Instagram
-curl -X POST http://localhost:5001/api/check-now      # Pinterest
-```
-
-### Configure Trigger URLs
-
-Trigger URLs are auto-synced from `config.yaml` on startup.
-
-## Auto-Detection
-
-Monitors automatically detect if CORAL is available:
-
-```python
-from coral_checker import should_use_coral
-
-# Fast check (<500ms timeout)
-use_hub, message = should_use_coral()
-
-if use_hub:
-    print("INTEGRATED mode - sending to CORAL")
-else:
-    print("STANDALONE mode - working independently")
-```
-
-Test it:
-```bash
-python3 demo_auto_detection.py  # See auto-detection in action
-```
-
-## Person Management
-
-Link multiple platform profiles to track one person:
-
-1. Create a person: "John Doe"
-2. Link profiles:
-   - Instagram: @johndoe
-   - Pinterest: @john_doe_pins
-   - Spotify: John Doe
-3. See all their activity in one view
-
-## 📁 Project Structure
+## project structure
 
 ```
-coral/
-├── config.yaml                  # Central configuration
-├── start_all.sh                 # Start everything
-├── start_monitor.sh             # Start one monitor
-├── start_monitors_only.sh       # Monitors only
-├── demo_auto_detection.py       # Demo auto-detection
-│
-├── coral/                     # Hub Dashboard
-│   ├── app.py                   # Flask app
-│   ├── database.py              # SQLite DB
-│   ├── coral_notifier.py      # Integration helper
-│   └── templates/index.html     # Web UI
-│
-├── instagram_monitor/           # Instagram OSINT
-├── pinterest_monitor/           # Pinterest OSINT
-└── spotify_monitor/             # Spotify OSINT
+recoral/
+├── app.py                flask app + blueprint registration
+├── config.py             env-based config
+├── database.py           sqlite operations
+├── scheduler.py          apscheduler wrapper
+├── maigret_search.py     username osint search
+├── monitors/
+│   ├── instagram.py      instaloader-based profile diffing
+│   ├── pinterest.py      board/pin count tracking
+│   └── spotify.py        sp_dc auth + spclient api
+├── routes/
+│   ├── pages.py          serves the spa
+│   ├── identities.py     identity crud
+│   ├── accounts.py       account crud
+│   ├── events.py         activity timeline
+│   ├── monitoring.py     check triggers + maigret
+│   └── settings.py       app configuration
+├── static/               css, js, images
+└── templates/
+    └── index.html         single-page app
 ```
 
-## 📊 API Endpoints
+## configuration
 
-### Hub API
-- `GET /api/stats` - System statistics
-- `GET /api/persons` - List persons
-- `POST /api/persons` - Create person
-- `GET /api/events` - List events
-- `POST /api/webhook/{platform}` - Receive events
-- `POST /api/trigger` - Trigger all checks
-- `POST /api/platforms/{id}/trigger` - Trigger one platform
+all via `.env` or the settings page in the ui.
 
-### Monitor APIs
-Each monitor exposes:
-- `POST /api/check-now` - Trigger check
-- Platform-specific endpoints
+| variable | default | description |
+|---|---|---|
+| `CORAL_PORT` | `3456` | server port |
+| `CORAL_HOST` | `0.0.0.0` | bind address |
+| `CORAL_CHECK_INTERVAL` | `300` | seconds between checks |
+| `SP_DC_COOKIE` | | global spotify cookie |
+| `INSTAGRAM_SESSION_FILE` | | global ig session username |
 
-## 🛑 Stop Services
+## api
 
-Find and stop running services:
-```bash
-lsof -ti:3456,5001,8000,8001
+```
+GET  /api/identities              list identities
+POST /api/identities              create identity
+GET  /api/events                  activity timeline
+POST /api/identities/:id/accounts link an account
+POST /api/check-all               trigger all checks
+POST /api/check/:account_id       check one account
+POST /api/maigret/search          username search
+GET  /api/settings                read settings
+PUT  /api/settings                update settings
+GET  /api/stats                   dashboard stats
 ```
 
-Then stop each PID individually:
-```bash
-kill 12345  # Replace with actual PID
-```
+## license
 
-## 📝 Requirements
-
-- Python 3.7+
-- Flask 3.0.0
-- requests 2.31.0
-- python-dateutil 2.8.2
-- pyyaml 6.0+
-
-## 🔌 Integrate Your Own Tool
-
-See [docs/integration/AI_AGENT_INTEGRATION.md](docs/integration/AI_AGENT_INTEGRATION.md) for detailed guide on integrating new platforms using AI assistants.
-
-Quick integration:
-```python
-from coral.coral_notifier import CORALNotifier
-
-# Auto-detects CORAL availability
-notifier = CORALNotifier('myplatform')
-
-# Send events (gracefully fails in standalone mode)
-notifier.send_event(
-    username='johndoe',
-    event_type='new_post',
-    summary='New post detected',
-    data={'post_id': '123'}
-)
-```
-
-## Use Cases
-
-**Security Researcher**: Monitor multiple social profiles  
-**OSINT Investigator**: Track target across platforms  
-**Brand Monitor**: Watch for mentions/activity  
-**Developer**: Build custom OSINT tools with shared UI  
-
-## 📚 Documentation
-
-- **[docs/guides/STANDALONE_USAGE.md](docs/guides/STANDALONE_USAGE.md)** - Run monitors independently
-- **[docs/integration/AI_AGENT_INTEGRATION.md](docs/integration/AI_AGENT_INTEGRATION.md)** - Integrate new platforms
-- **[docs/contributing/CONTRIBUTING.md](docs/contributing/CONTRIBUTING.md)** - Contribution guide
-- **LICENSE** - MIT License
-
-## Key Benefits
-
-**Flexible** - Use with or without hub  
-**Fast** - Auto-detection <500ms  
-**Independent** - Each tool works standalone  
-**Extensible** - Easy to add platforms  
-**Well Documented** - Comprehensive guides  
-
-## License
-
-MIT License - See [LICENSE](LICENSE)
-
-## 🤝 Contributing
-
-See [docs/contributing/CONTRIBUTING.md](docs/contributing/CONTRIBUTING.md) for guidelines.
-
----
-
-**Get Started**: `./start_all.sh` → http://localhost:3456
-
-## 📱 Included Monitors
-
-CORAL ships with bundled monitors that work standalone or with the hub:
-
-- **[Instagram Monitor](instagram_monitor/)** - Track Instagram user activities and profile changes
-- **[Pinterest Monitor](pinterest_monitor/)** - Monitor Pinterest boards for new pins and activity
-- **[Spotify Monitor](spotify_monitor/)** - Track Spotify friend activity and profile changes
-
-Each monitor works completely standalone. CORAL integration is optional and adds unified dashboard functionality.
-
-## 🔗 Adding Your Own Monitor
-
-See [ADDING_NEW_MONITORS.md](ADDING_NEW_MONITORS.md) for a complete guide on integrating new OSINT tools with CORAL.
+mit

@@ -1,9 +1,0 @@
-requests
-python-dateutil
-urllib3
-pyotp
-pytz
-tzlocal
-python-dotenv
-spotipy
-wcwidth
