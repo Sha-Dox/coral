@@ -17,13 +17,13 @@ built-in username search powered by maigret scans hundreds of sites for matching
 ## install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/alfaoz/coral/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Sha-Dox/coral/main/install.sh | bash
 ```
 
 or manually:
 
 ```bash
-git clone https://github.com/alfaoz/coral.git
+git clone https://github.com/Sha-Dox/coral.git
 cd coral
 pip install -r recoral/requirements.txt
 cp .env.example .env
