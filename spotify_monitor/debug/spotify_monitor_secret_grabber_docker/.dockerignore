@@ -1,9 +1,0 @@
-__pycache__/
-*.pyc
-*.pyo
-*.swp
-.env
-venv/
-dist/
-build/
-.git
