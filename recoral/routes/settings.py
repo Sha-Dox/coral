@@ -77,6 +77,62 @@ def test_notification():
     return jsonify({"success": True, "results": results})
 
 
+@bp.route("/ig-status", methods=["GET"])
+def ig_status():
+    """Check if the current Instagram session is valid."""
+    session_username = db.get_setting("instagram_session", "") or config.INSTAGRAM_SESSION_FILE
+    if not session_username:
+        return jsonify({"success": True, "status": "no_session", "message": "No session configured."})
+
+    from pathlib import Path
+    session_file = Path.home() / ".config" / "instaloader" / f"session-{session_username}"
+    if not session_file.exists():
+        return jsonify({"success": True, "status": "no_file", "message": f"Session file not found for {session_username}."})
+
+    try:
+        import instaloader
+        loader = instaloader.Instaloader()
+        loader.load_session_from_file(session_username)
+        # Test by fetching own profile
+        profile = instaloader.Profile.from_username(loader.context, session_username)
+        return jsonify({"success": True, "status": "valid", "username": session_username,
+                        "message": f"@{session_username} — valid ({profile.followers} followers)"})
+    except instaloader.exceptions.LoginRequiredException:
+        return jsonify({"success": True, "status": "expired", "username": session_username,
+                        "message": f"Session for @{session_username} has expired."})
+    except Exception as e:
+        err = str(e)
+        if "login" in err.lower() or "401" in err or "expired" in err.lower():
+            return jsonify({"success": True, "status": "expired", "username": session_username,
+                            "message": f"Session for @{session_username} has expired."})
+        # Try a simpler test — just see if we can load the session at all
+        try:
+            import pickle, requests
+            with open(session_file, "rb") as f:
+                jar = pickle.load(f)
+            sessionid = None
+            for cookie in jar:
+                if cookie.name == "sessionid":
+                    sessionid = cookie.value
+                    break
+            if sessionid:
+                resp = requests.get("https://www.instagram.com/accounts/edit/?__a=1&__d=dis",
+                    cookies={"sessionid": sessionid},
+                    headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+                             "X-IG-App-ID": "936619743392459"},
+                    timeout=10)
+                if resp.status_code == 200:
+                    return jsonify({"success": True, "status": "valid", "username": session_username,
+                                    "message": f"@{session_username} — valid"})
+                else:
+                    return jsonify({"success": True, "status": "expired", "username": session_username,
+                                    "message": f"Session for @{session_username} has expired."})
+        except Exception:
+            pass
+        return jsonify({"success": True, "status": "error", "username": session_username,
+                        "message": f"Session check failed: {err}"})
+
+
 @bp.route("/import-ig-session", methods=["POST"])
 def import_ig_session():
     """Import Instagram session from Chrome or Firefox cookies."""

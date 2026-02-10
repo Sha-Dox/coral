@@ -1,4 +1,4 @@
-"""Extract Instagram session cookies from Chrome/Firefox and create instaloader session files."""
+"""Extract Instagram/Spotify session cookies from Chrome/Firefox and create instaloader session files."""
 
 import json
 import logging
@@ -6,12 +6,19 @@ import os
 import pickle
 import shutil
 import sqlite3
-import struct
-import subprocess
 import tempfile
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+try:
+    from pycookiecheat import chrome_cookies as _pycookiecheat
+    PYCOOKIECHEAT = True
+except ImportError:
+    PYCOOKIECHEAT = False
+
+# Cache Chrome Safe Storage password so Keychain only prompts once per app run
+_chrome_password_cache = None
 
 
 def extract_instagram_session(browser="chrome"):
@@ -46,12 +53,14 @@ def extract_instagram_session(browser="chrome"):
     except Exception as e:
         logger.warning("Couldn't auto-detect IG username: %s", e)
 
-    # If we couldn't detect username, extract ds_user_id from sessionid and use it as placeholder
+    # If we couldn't detect username, try to extract numeric user ID from sessionid
     if not username:
         # sessionid format: "{user_id}%3A..."
         if "%3A" in sessionid:
-            username = sessionid.split("%3A")[0]
-        else:
+            candidate = sessionid.split("%3A")[0]
+            if candidate.isdigit():
+                username = candidate
+        if not username:
             username = "imported"
 
     # Create instaloader session file
@@ -136,18 +145,15 @@ def _get_ig_username(sessionid):
 
 def _create_instaloader_session(username, cookies):
     """Create an instaloader-compatible session file from browser cookies."""
-    import requests as req
-
-    jar = req.cookies.RequestsCookieJar()
-    for c in cookies:
-        jar.set(c["name"], c["value"], domain=c.get("domain", ".instagram.com"), path=c.get("path", "/"))
+    # Instaloader expects a pickled plain dict, NOT a RequestsCookieJar
+    cookie_dict = {c["name"]: c["value"] for c in cookies}
 
     session_dir = Path.home() / ".config" / "instaloader"
     session_dir.mkdir(parents=True, exist_ok=True)
     session_file = session_dir / f"session-{username}"
 
     with open(session_file, "wb") as f:
-        pickle.dump(jar, f)
+        pickle.dump(cookie_dict, f)
 
     logger.info("Created instaloader session: %s", session_file)
     return session_file
@@ -188,97 +194,64 @@ def _get_chrome_cookies(domain="instagram.com"):
     return _get_chrome_cookies_for(domain)
 
 
-def _get_chrome_cookies_for(domain):
-    """Extract cookies for a domain from Chrome on macOS."""
-    cookie_db = Path.home() / "Library" / "Application Support" / "Google" / "Chrome" / "Default" / "Cookies"
-    if not cookie_db.exists():
-        chrome_dir = Path.home() / "Library" / "Application Support" / "Google" / "Chrome"
-        for profile in ["Default", "Profile 1", "Profile 2", "Profile 3"]:
-            candidate = chrome_dir / profile / "Cookies"
-            if candidate.exists():
-                cookie_db = candidate
-                break
-        if not cookie_db.exists():
-            raise FileNotFoundError("Chrome cookie database not found. Is Chrome installed?")
+def _get_chrome_password():
+    """Get Chrome Safe Storage password from Keychain, cached after first call."""
+    global _chrome_password_cache
+    if _chrome_password_cache is not None:
+        return _chrome_password_cache
 
-    key = _get_chrome_key()
-
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
-    tmp.close()
-    try:
-        shutil.copy2(cookie_db, tmp.name)
-        conn = sqlite3.connect(tmp.name)
-        cursor = conn.execute(
-            "SELECT name, encrypted_value, host_key, path FROM cookies "
-            "WHERE host_key LIKE ?", (f"%{domain}%",)
-        )
-        cookies = []
-        for name, encrypted_value, host, path in cursor.fetchall():
-            value = _decrypt_chrome_cookie(encrypted_value, key)
-            if value:
-                cookies.append({"name": name, "value": value, "domain": host, "path": path})
-        conn.close()
-    finally:
-        os.unlink(tmp.name)
-
-    return cookies
-
-
-def _get_chrome_key():
-    """Get Chrome's encryption key from macOS Keychain."""
+    import subprocess
     result = subprocess.run(
         ["security", "find-generic-password", "-s", "Chrome Safe Storage", "-w"],
         capture_output=True, text=True,
     )
     if result.returncode != 0:
-        raise RuntimeError("Could not get Chrome Safe Storage key from Keychain. Grant access if prompted.")
-    password = result.stdout.strip()
-
-    from hashlib import pbkdf2_hmac
-    return pbkdf2_hmac("sha1", password.encode("utf-8"), b"saltysalt", 1003, dklen=16)
+        raise RuntimeError("Could not get Chrome Safe Storage key from Keychain.")
+    _chrome_password_cache = result.stdout.strip()
+    return _chrome_password_cache
 
 
-def _decrypt_chrome_cookie(encrypted_value, key):
-    """Decrypt a Chrome cookie value (macOS AES-CBC)."""
-    if not encrypted_value:
-        return ""
+def _get_chrome_cookies_for(domain):
+    """Extract cookies for a domain from Chrome using pycookiecheat."""
+    if not PYCOOKIECHEAT:
+        raise RuntimeError("pycookiecheat not installed. Run: pip install pycookiecheat")
 
-    # v10 prefix means AES-CBC encrypted
-    if encrypted_value[:3] == b"v10":
-        encrypted_value = encrypted_value[3:]
-        iv = b" " * 16
-        try:
-            from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-            from cryptography.hazmat.primitives import padding as sym_padding
+    chrome_dir = Path.home() / "Library" / "Application Support" / "Google" / "Chrome"
+    if not chrome_dir.exists():
+        raise FileNotFoundError("Chrome not found. Is Chrome installed?")
 
-            cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
-            decryptor = cipher.decryptor()
-            decrypted = decryptor.update(encrypted_value) + decryptor.finalize()
+    cookie_file = None
+    for profile in ["Default", "Profile 1", "Profile 2", "Profile 3", "Guest Profile"]:
+        candidate = chrome_dir / profile / "Cookies"
+        if candidate.exists():
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
+            tmp.close()
+            try:
+                shutil.copy2(candidate, tmp.name)
+                conn = sqlite3.connect(tmp.name)
+                count = conn.execute(
+                    "SELECT COUNT(*) FROM cookies WHERE host_key LIKE ?",
+                    (f"%{domain}%",)
+                ).fetchone()[0]
+                conn.close()
+            finally:
+                os.unlink(tmp.name)
+            if count > 0:
+                cookie_file = candidate
+                break
 
-            # Remove PKCS7 padding
-            pad_len = decrypted[-1]
-            if 1 <= pad_len <= 16 and all(b == pad_len for b in decrypted[-pad_len:]):
-                decrypted = decrypted[:-pad_len]
+    if not cookie_file:
+        raise FileNotFoundError(f"No Chrome profile has cookies for {domain}.")
 
-            # Strip any remaining null bytes
-            decrypted = decrypted.rstrip(b"\x00")
-            return decrypted.decode("utf-8", errors="ignore")
-        except ImportError:
-            raise RuntimeError("'cryptography' package required for Chrome cookies. Install: pip install cryptography")
-        except Exception as e:
-            logger.debug("Failed to decrypt Chrome cookie: %s", e)
-            return ""
+    password = _get_chrome_password()
+    url = f"https://www.{domain}"
+    cookie_dict = _pycookiecheat(url, cookie_file=str(cookie_file), password=password)
 
-    # v20 prefix means AES-256-GCM (newer Chrome) - not yet supported
-    if encrypted_value[:3] == b"v20":
-        logger.debug("v20 encrypted cookies not yet supported")
-        return ""
+    cookies = []
+    for name, value in cookie_dict.items():
+        cookies.append({"name": name, "value": value, "domain": f".{domain}", "path": "/"})
 
-    # Unencrypted
-    try:
-        return encrypted_value.decode("utf-8")
-    except Exception:
-        return ""
+    return cookies
 
 
 # ---- Firefox ----

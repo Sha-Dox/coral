@@ -50,6 +50,7 @@
         <!-- Dashboard -->
         <section id="view-dashboard" class="view active">
             <div class="view-header"><h1>Dashboard</h1></div>
+            <div id="alerts-bar"></div>
             <div class="stats-row" id="stats-row"></div>
             <div class="panel">
                 <div class="panel-header"><h2>Recent Activity</h2></div>
@@ -191,6 +192,13 @@
                                 <button class="btn btn-ghost btn-sm" id="import-firefox-btn" onclick="App.importIgSession('firefox')">Import from Firefox</button>
                             </div>
                             <div id="ig-import-status" class="field-hint" style="margin-top:8px"></div>
+                        </div>
+                        <div class="form-field" style="margin-top:12px">
+                            <label>Session status</label>
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <button class="btn btn-ghost btn-sm" id="check-ig-status-btn" onclick="App.checkIgStatus()">Check Login Status</button>
+                                <span id="ig-status-text" class="field-hint" style="margin:0"></span>
+                            </div>
                         </div>
                         <div class="form-field" style="margin-top:12px">
                             <label>Manual setup <span class="hint">(fallback)</span></label>

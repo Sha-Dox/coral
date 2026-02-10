@@ -66,7 +66,27 @@ const App = (() => {
             statCard(state.stats.accounts || 0, 'Accounts'),
             statCard(state.stats.recent_events || 0, 'Events (24h)'),
         ].join('');
+        renderAlerts(statsData.alerts || []);
         renderEventFeed('recent-events', eventsData.events, 'No activity yet. Add some accounts and run a check.');
+    }
+
+    function renderAlerts(alerts) {
+        const el = document.getElementById('alerts-bar');
+        if (!alerts || alerts.length === 0) { el.innerHTML = ''; return; }
+        el.innerHTML = alerts.map(a => {
+            const isIgAuth = a.platform === 'instagram' && /session|expired|login|unauthorized/i.test(a.error);
+            return `
+                <div class="alert-item">
+                    <div class="alert-icon">&#9888;</div>
+                    <div class="alert-body">
+                        <div class="alert-title">${platformIcon(a.platform)} @${esc(a.username)} <span class="text-muted">&middot; ${esc(a.identity_name)}</span></div>
+                        <div class="alert-message">${esc(a.error)}</div>
+                    </div>
+                    ${isIgAuth ? `<button class="btn btn-ghost btn-sm alert-fix-btn" onclick="App.fixIgSession(this, ${a.account_id})">Fix Session</button>` : ''}
+                    <div class="alert-count">${a.error_count}x</div>
+                </div>
+            `;
+        }).join('');
     }
 
     function statCard(value, label) {
@@ -572,6 +592,63 @@ const App = (() => {
         }
     }
 
+    async function checkIgStatus() {
+        const btn = document.getElementById('check-ig-status-btn');
+        const status = document.getElementById('ig-status-text');
+        btn.disabled = true;
+        btn.textContent = 'Checking...';
+        status.textContent = '';
+        try {
+            const data = await api('/api/settings/ig-status', { silent: true });
+            if (data.status === 'valid') {
+                status.textContent = `@${data.username} — valid`;
+                status.style.color = 'var(--green)';
+            } else if (data.status === 'expired') {
+                status.textContent = `@${data.username} — expired`;
+                status.style.color = 'var(--red)';
+            } else {
+                status.textContent = data.message;
+                status.style.color = 'var(--orange)';
+            }
+        } catch (e) {
+            status.textContent = e.message;
+            status.style.color = 'var(--red)';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Check Login Status';
+        }
+    }
+
+    async function fixIgSession(btn, accountId) {
+        btn.disabled = true;
+        btn.textContent = 'Checking...';
+        let fixed = false;
+        for (const browser of ['chrome', 'firefox']) {
+            try {
+                const data = await api('/api/settings/import-ig-session', {
+                    method: 'POST', body: JSON.stringify({ browser }), silent: true,
+                });
+                if (data.success) {
+                    toast(`Session reimported from ${browser}${data.username ? ` for @${data.username}` : ''}`);
+                    fixed = true;
+                    if (accountId) {
+                        await api(`/api/check/${accountId}`, { method: 'POST', silent: true });
+                        toast('Recheck triggered');
+                    }
+                    setTimeout(loadDashboard, 5000);
+                    break;
+                }
+            } catch (e) { /* try next browser */ }
+        }
+        if (!fixed) {
+            toast('No valid Instagram session found in Chrome or Firefox. Log into instagram.com first.', true);
+            btn.disabled = false;
+            btn.textContent = 'Fix Session';
+            return;
+        }
+        btn.textContent = 'Fixed';
+    }
+
     async function importIgSession(browser) {
         const btn = document.getElementById(`import-${browser}-btn`);
         const status = document.getElementById('ig-import-status');
@@ -715,6 +792,7 @@ const App = (() => {
         saveAccount, removeAccount, checkAccount, checkAll,
         searchMaigret, showEvent, showLinkResult, confirmLink,
         closeModal, closeModalOverlay, openModal,
-        loadSettings, saveSettings, testNotification, importIgSession, importSpotifyCookie, copyCmd,
+        loadSettings, saveSettings, testNotification,
+        checkIgStatus, fixIgSession, importIgSession, importSpotifyCookie, copyCmd,
     };
 })();
