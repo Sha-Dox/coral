@@ -62,6 +62,38 @@ class InstagramMonitor:
             "full_name": p.full_name,
         }
 
+    def _try_browser_reimport(self, session_username):
+        """Try to reimport Instagram session from Chrome, then Firefox."""
+        try:
+            from browser_cookies import extract_instagram_session
+        except ImportError:
+            return None
+
+        for browser in ("chrome", "firefox"):
+            try:
+                result = extract_instagram_session(browser)
+                if result.get("success") and not result.get("needs_username"):
+                    new_user = result["username"]
+                    logger.info("Auto-reimported Instagram session from %s for %s", browser, new_user)
+                    return new_user
+                elif result.get("success") and result.get("needs_username") and session_username:
+                    # Session file was created but we don't know the username.
+                    # Rename it to the existing session_username so instaloader finds it.
+                    from pathlib import Path
+                    session_dir = Path.home() / ".config" / "instaloader"
+                    for old in session_dir.glob("session-*"):
+                        stem = old.name.replace("session-", "")
+                        if stem.isdigit() or stem == "imported":
+                            target = session_dir / f"session-{session_username}"
+                            if not target.exists():
+                                old.rename(target)
+                            break
+                    logger.info("Auto-reimported Instagram session from %s, reused username %s", browser, session_username)
+                    return session_username
+            except Exception as e:
+                logger.debug("Browser reimport from %s failed: %s", browser, e)
+        return None
+
     def check(self, account, db):
         if not AVAILABLE:
             return
@@ -74,24 +106,46 @@ class InstagramMonitor:
 
         try:
             data = self.get_profile(username, session_username)
-        except instaloader.exceptions.LoginRequiredException:
-            msg = "Session expired or login required"
-            logger.error("Instagram %s: %s", username, msg)
-            db.record_check_error(account_id, msg)
-            from notifier import notify
-            notify(f"Instagram session expired for @{username}. Re-run: instaloader --login {session_username or 'USERNAME'}",
-                   "instagram", username, "session_expired")
-            return
-        except instaloader.exceptions.ConnectionException as e:
-            if "429" in str(e) or "rate" in str(e).lower():
-                msg = "Rate limited by Instagram"
-            elif "401" in str(e):
-                msg = "Session expired or unauthorized"
+        except (instaloader.exceptions.LoginRequiredException,
+                instaloader.exceptions.ConnectionException) as e:
+            is_auth = isinstance(e, instaloader.exceptions.LoginRequiredException) or "401" in str(e)
+            is_rate = "429" in str(e) or "rate" in str(e).lower()
+
+            if is_rate:
+                logger.error("Instagram %s: rate limited", username)
+                db.record_check_error(account_id, "Rate limited by Instagram")
+                return
+
+            if is_auth:
+                logger.warning("Instagram %s: session expired, attempting browser reimport", username)
+                new_session = self._try_browser_reimport(session_username)
+                if new_session:
+                    # Clear cached loader so it picks up new session
+                    self._loaders.pop(session_username, None)
+                    self._loaders.pop(new_session, None)
+                    try:
+                        data = self.get_profile(username, new_session)
+                        logger.info("Instagram %s: browser reimport succeeded", username)
+                        # Update the stored session username if it changed
+                        if new_session != session_username:
+                            db.set_setting("instagram_session", new_session)
+                    except Exception as retry_err:
+                        logger.error("Instagram %s: reimport failed too: %s", username, retry_err)
+                        db.record_check_error(account_id, "Session expired. Log into instagram.com in your browser to auto-fix.")
+                        from notifier import notify
+                        notify(f"Instagram session expired for @{username}. Log into instagram.com in your browser.",
+                               "instagram", username, "session_expired")
+                        return
+                else:
+                    db.record_check_error(account_id, "Session expired. Log into instagram.com in your browser to auto-fix.")
+                    from notifier import notify
+                    notify(f"Instagram session expired for @{username}. Log into instagram.com in your browser.",
+                           "instagram", username, "session_expired")
+                    return
             else:
-                msg = str(e)
-            logger.error("Instagram %s: %s", username, msg)
-            db.record_check_error(account_id, msg)
-            return
+                logger.error("Instagram %s: %s", username, e)
+                db.record_check_error(account_id, str(e))
+                return
         except Exception as e:
             logger.error("Instagram fetch failed for %s: %s", username, e)
             db.record_check_error(account_id, str(e))

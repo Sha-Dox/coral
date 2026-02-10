@@ -46,6 +46,19 @@ def stats():
             except (ValueError, TypeError):
                 pass
 
+    alerts = []
+    for i in identities:
+        for a in i["accounts"]:
+            if a.get("error_count", 0) > 0:
+                alerts.append({
+                    "account_id": a["id"],
+                    "username": a["username"],
+                    "platform": a["platform"],
+                    "identity_name": i["name"],
+                    "error": a.get("last_error", "Unknown error"),
+                    "error_count": a["error_count"],
+                })
+
     return jsonify({
         "success": True,
         "stats": {
@@ -53,6 +66,7 @@ def stats():
             "accounts": total_accounts,
             "recent_events": recent,
         },
+        "alerts": alerts,
     })
 
 
