@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="logos/banner.png" alt="coral" width="100%">
+  <img src="recoral/static/images/banner.png" alt="coral" width="100%">
 </div>
 
 # coral
@@ -36,17 +36,15 @@ open http://localhost:3456
 
 ### instagram
 
-requires a logged-in instaloader session.
+go to settings and click "import from chrome" or "import from firefox". coral grabs the session cookie from your browser automatically. you just need to be logged into instagram.com.
 
-```bash
-instaloader --login YOUR_USERNAME
-```
-
-then either set it globally in settings, or per-account when adding an instagram monitor.
+alternatively, run `instaloader --login YOUR_USERNAME` in terminal.
 
 ### spotify
 
-grab your `sp_dc` cookie from open.spotify.com (browser devtools → application → cookies). paste it in settings or per-account.
+go to settings and click "import from chrome" or "import from firefox". coral grabs the sp_dc cookie automatically. you just need to be logged into open.spotify.com.
+
+alternatively, grab the `sp_dc` cookie manually from browser devtools and paste it in settings.
 
 ### pinterest
 
@@ -60,6 +58,8 @@ recoral/
 ├── config.py             env-based config
 ├── database.py           sqlite operations
 ├── scheduler.py          apscheduler wrapper
+├── browser_cookies.py    chrome/firefox cookie extraction
+├── notifier.py           discord + ntfy notifications
 ├── maigret_search.py     username osint search
 ├── monitors/
 │   ├── instagram.py      instaloader-based profile diffing
@@ -71,10 +71,10 @@ recoral/
 │   ├── accounts.py       account crud
 │   ├── events.py         activity timeline
 │   ├── monitoring.py     check triggers + maigret
-│   └── settings.py       app configuration
+│   └── settings.py       app configuration + cookie import
 ├── static/               css, js, images
 └── templates/
-    └── index.html         single-page app
+    └── index.html        single-page app
 ```
 
 ## configuration
