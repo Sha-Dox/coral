@@ -6,7 +6,7 @@ set -e
 
 CORAL_DIR="${CORAL_DIR:-$HOME/coral}"
 BRANCH="${BRANCH:-main}"
-REPO="${REPO:-https://github.com/<user>/coral.git}"
+REPO="${REPO:-https://github.com/Sha-Dox/coral.git}"
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'

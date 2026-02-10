@@ -44,11 +44,12 @@ logs/
 *.sqlite3
 *.db-journal
 
+# Environment
+.env
+
 # CORAL specific data files
-coral/coral.db
-coral/osint_hub.db
-coral/*.db
-coral/*.sqlite
+recoral/*.db
+recoral/*.sqlite
 
 # Temporary files
 *.tmp
@@ -80,12 +81,3 @@ backups/
 htmlcov/
 .tox/
 
-# OSINT Hub specific
-osint_hub/osint_hub.db
-osint_hub/osint_hub.db-journal
-
-# Sensitive data (if any)
-secrets/
-*.key
-*.pem
-credentials.json
