@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from flask import Blueprint, request, jsonify, current_app
 import database as db
@@ -29,43 +29,12 @@ def check_single(account_id):
 
 @bp.route("/stats", methods=["GET"])
 def stats():
-    identities = db.get_all_identities()
-    total_accounts = sum(len(i["accounts"]) for i in identities)
-    events = db.get_events(limit=1000)
-    now = datetime.now(timezone.utc)
-    recent = 0
-    for e in events:
-        if e.get("created_at"):
-            try:
-                from dateutil import parser as dp
-                dt = dp.parse(e["created_at"])
-                if dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=timezone.utc)
-                if (now - dt).total_seconds() < 86400:
-                    recent += 1
-            except (ValueError, TypeError):
-                pass
-
-    alerts = []
-    for i in identities:
-        for a in i["accounts"]:
-            if a.get("error_count", 0) > 0:
-                alerts.append({
-                    "account_id": a["id"],
-                    "username": a["username"],
-                    "platform": a["platform"],
-                    "identity_name": i["name"],
-                    "error": a.get("last_error", "Unknown error"),
-                    "error_count": a["error_count"],
-                })
+    stats = db.get_dashboard_stats()
+    alerts = db.get_account_alerts()
 
     return jsonify({
         "success": True,
-        "stats": {
-            "identities": len(identities),
-            "accounts": total_accounts,
-            "recent_events": recent,
-        },
+        "stats": stats,
         "alerts": alerts,
     })
 

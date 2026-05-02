@@ -180,13 +180,18 @@
                     <div class="settings-section-title">Instagram</div>
                     <div class="settings-card">
                         <div class="form-field">
-                            <label>Global Session Username</label>
+                            <label>Instagram username used for checks</label>
                             <input type="text" id="setting-instagram-session" placeholder="your_ig_login_username">
-                            <div class="field-hint">The IG account used for monitoring. Import from your browser or set up manually.</div>
+                            <div class="field-hint">This is the Instagram account CORAL uses to check profiles. Most people can set this up with the Easy Setup button below.</div>
                         </div>
                         <div class="form-field" style="margin-top:12px">
-                            <label>Import session from browser</label>
-                            <div class="field-hint" style="margin-bottom:8px">Log into instagram.com in your browser, then click to import the session automatically.</div>
+                            <label>Quick login setup <span class="hint">(recommended)</span></label>
+                            <div class="field-hint" style="margin-bottom:8px">1) Log into instagram.com in Chrome or Firefox.<br>2) Click Easy Setup.<br>3) You are done.</div>
+                            <button class="btn btn-primary btn-sm" id="ig-easy-setup-btn" onclick="App.easyIgSetup()">Easy Setup</button>
+                        </div>
+                        <div class="form-field" style="margin-top:12px">
+                            <label>Manual browser import <span class="hint">(advanced)</span></label>
+                            <div class="field-hint" style="margin-bottom:8px">Use this only if Easy Setup does not work.</div>
                             <div style="display:flex;gap:8px">
                                 <button class="btn btn-ghost btn-sm" id="import-chrome-btn" onclick="App.importIgSession('chrome')">Import from Chrome</button>
                                 <button class="btn btn-ghost btn-sm" id="import-firefox-btn" onclick="App.importIgSession('firefox')">Import from Firefox</button>
@@ -299,9 +304,9 @@
                     <input type="text" id="account-username" placeholder="e.g. johndoe" required>
                 </div>
                 <div class="form-field" id="instagram-config-field" style="display:none">
-                    <label>Session username <span class="hint">(uses global if empty)</span></label>
+                    <label>Login username <span class="hint">(optional, uses global if empty)</span></label>
                     <input type="text" id="account-ig-session" placeholder="your_ig_login_username">
-                    <div class="field-hint">Leave empty to use the global session from Settings. Or import from browser:</div>
+                    <div class="field-hint">Leave empty to use the username from Settings. Or import directly from your browser:</div>
                     <div style="display:flex;gap:8px;margin-top:6px">
                         <button type="button" class="btn btn-ghost btn-xs" onclick="App.importIgSession('chrome')">Chrome</button>
                         <button type="button" class="btn btn-ghost btn-xs" onclick="App.importIgSession('firefox')">Firefox</button>

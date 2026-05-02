@@ -25,12 +25,15 @@ or manually:
 ```bash
 git clone https://github.com/Sha-Dox/coral.git
 cd coral
-pip install -r recoral/requirements.txt
+python3 -m venv venv
+./venv/bin/pip install -r recoral/requirements.txt
 cp .env.example .env
-python3 recoral/app.py
+./start.sh
 ```
 
 open http://localhost:3456
+
+`start.sh` uses PM2 when available (daemon mode), and falls back to foreground mode when PM2 is missing. set `CORAL_NO_PM2=1` to always run in foreground mode.
 
 ## setup
 

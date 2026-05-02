@@ -18,8 +18,10 @@ const App = (() => {
         document.querySelectorAll('.nav-item').forEach(el =>
             el.addEventListener('click', () => navigate(el.dataset.view))
         );
-        loadDashboard();
-        setInterval(() => { if (state.currentView === 'dashboard') loadDashboard(); }, 30000);
+        runSafely(loadDashboard);
+        setInterval(() => {
+            if (state.currentView === 'dashboard') runSafely(loadDashboard);
+        }, 30000);
     });
 
     // ---- Navigation ----
@@ -32,10 +34,14 @@ const App = (() => {
         const el = document.getElementById(`view-${view}`);
         if (el) el.classList.add('active');
 
-        if (view === 'dashboard') loadDashboard();
-        else if (view === 'identities') loadIdentities();
-        else if (view === 'activity') { state.activityOffset = 0; loadActivity(); }
-        else if (view === 'settings') loadSettings();
+        if (view === 'dashboard') runSafely(loadDashboard);
+        else if (view === 'identities') runSafely(loadIdentities);
+        else if (view === 'activity') {
+            state.activityOffset = 0;
+            runSafely(loadActivity);
+        } else if (view === 'settings') {
+            runSafely(loadSettings);
+        }
     }
 
     // ---- API ----
@@ -68,6 +74,22 @@ const App = (() => {
         ].join('');
         renderAlerts(statsData.alerts || []);
         renderEventFeed('recent-events', eventsData.events, 'No activity yet. Add some accounts and run a check.');
+    }
+
+    async function refreshOverview() {
+        await Promise.allSettled([loadIdentities(), loadDashboard()]);
+    }
+
+    function isDetailViewActive() {
+        const view = document.getElementById('view-identity-detail');
+        return !!view && view.classList.contains('active');
+    }
+
+    async function refreshAfterMutation(identityId = null) {
+        await refreshOverview();
+        if (identityId !== null && state.detailId == identityId && isDetailViewActive()) {
+            await showDetail(identityId);
+        }
     }
 
     function renderAlerts(alerts) {
@@ -206,7 +228,7 @@ const App = (() => {
 
     function activityPage(page) {
         state.activityOffset = (page - 1) * PAGE_SIZE;
-        loadActivity();
+        runSafely(loadActivity);
     }
 
     // ---- Identities ----
@@ -255,9 +277,11 @@ const App = (() => {
     // ---- Identity Detail ----
     async function showDetail(id) {
         state.detailId = id;
-        const data = await api(`/api/identities/${id}`);
+        const [data, eventsData] = await Promise.all([
+            api(`/api/identities/${id}`),
+            api(`/api/events?identity_id=${id}&limit=50`, { silent: true }),
+        ]);
         const ident = data.identity;
-        const eventsData = await api(`/api/events?identity_id=${id}&limit=50`, { silent: true });
 
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-identity-detail').classList.add('active');
@@ -328,22 +352,22 @@ const App = (() => {
         const id = document.getElementById('identity-edit-id').value;
         const name = document.getElementById('identity-name').value.trim();
         const notes = document.getElementById('identity-notes').value.trim();
+        let savedIdentityId = null;
         if (id) {
             await api(`/api/identities/${id}`, { method: 'PUT', body: JSON.stringify({ name, notes }) });
+            savedIdentityId = Number(id);
         } else {
-            await api('/api/identities', { method: 'POST', body: JSON.stringify({ name, notes }) });
+            const created = await api('/api/identities', { method: 'POST', body: JSON.stringify({ name, notes }) });
+            savedIdentityId = created.id;
         }
         closeModal('modal-identity');
-        await loadIdentities();
-        loadDashboard();
-        if (state.detailId == id) showDetail(id);
+        await refreshAfterMutation(savedIdentityId);
     }
 
     async function deleteIdentity(id) {
         if (!confirm('Delete this identity and all its accounts?')) return;
         await api(`/api/identities/${id}`, { method: 'DELETE' });
-        await loadIdentities();
-        loadDashboard();
+        await refreshOverview();
     }
 
     // ---- Accounts ----
@@ -370,7 +394,7 @@ const App = (() => {
 
     async function saveAccount(e) {
         e.preventDefault();
-        const identityId = document.getElementById('account-identity-id').value;
+        const identityId = Number(document.getElementById('account-identity-id').value);
         const platform = document.getElementById('account-platform').value;
         const username = document.getElementById('account-username').value.trim();
         if (!platform) { toast('Select a platform', true); return; }
@@ -388,16 +412,13 @@ const App = (() => {
         await api(`/api/identities/${identityId}/accounts`, { method: 'POST', body: JSON.stringify(body) });
         closeModal('modal-account');
         toast(`Added @${username} on ${platform}`);
-        if (state.detailId == identityId) showDetail(identityId);
-        loadIdentities();
-        loadDashboard();
+        await refreshAfterMutation(identityId);
     }
 
     async function removeAccount(accountId, identityId) {
         if (!confirm('Remove this account?')) return;
         await api(`/api/accounts/${accountId}`, { method: 'DELETE' });
-        if (state.detailId == identityId) showDetail(identityId);
-        loadIdentities();
+        await refreshAfterMutation(identityId);
     }
 
     async function checkAccount(accountId) {
@@ -426,9 +447,9 @@ const App = (() => {
                 method: 'POST',
                 body: JSON.stringify({
                     username,
-                    top_sites: parseInt(document.getElementById('search-scope').value),
-                    timeout: parseInt(document.getElementById('search-timeout').value),
-                    max_connections: parseInt(document.getElementById('search-max-conn').value),
+                    top_sites: parseInt(document.getElementById('search-scope').value, 10),
+                    timeout: parseInt(document.getElementById('search-timeout').value, 10),
+                    max_connections: parseInt(document.getElementById('search-max-conn').value, 10),
                     tags: document.getElementById('search-tags').value,
                     all_sites: document.getElementById('search-all-sites').checked,
                     include_disabled: document.getElementById('search-disabled').checked,
@@ -511,18 +532,17 @@ const App = (() => {
     }
 
     async function confirmLink() {
-        const identityId = document.getElementById('link-identity-select').value;
+        const identityId = parseInt(document.getElementById('link-identity-select').value, 10);
         const platform = document.getElementById('link-platform').value;
         const username = document.getElementById('link-username').value;
 
         try {
             await api('/api/maigret/link', {
-                method: 'POST',
-                body: JSON.stringify({ identity_id: parseInt(identityId), platform, username }),
+                method: 'POST', body: JSON.stringify({ identity_id: identityId, platform, username }),
             });
             closeModal('modal-link');
             toast(`Linked @${username} to identity`);
-            loadIdentities();
+            await refreshAfterMutation(identityId);
         } catch (e) {
             // error already toasted by api()
         }
@@ -570,7 +590,7 @@ const App = (() => {
             }),
         });
         toast('Settings saved');
-        loadSettings();
+        runSafely(loadSettings);
     }
 
     async function testNotification() {
@@ -589,6 +609,130 @@ const App = (() => {
         } finally {
             btn.disabled = false;
             btn.textContent = 'Test Notification';
+        }
+    }
+
+    function normalizeUsername(value) {
+        return (value || '').trim().replace(/^@+/, '');
+    }
+
+    function setInstagramUsernameFields(username) {
+        const clean = normalizeUsername(username);
+        if (!clean) return;
+        const settingsInput = document.getElementById('setting-instagram-session');
+        if (settingsInput) settingsInput.value = clean;
+        const modalInput = document.getElementById('account-ig-session');
+        if (modalInput) modalInput.value = clean;
+    }
+
+    async function easyIgSetup() {
+        const btn = document.getElementById('ig-easy-setup-btn');
+        const status = document.getElementById('ig-import-status');
+        const idleText = 'Easy Setup';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Setting up...';
+        }
+        if (status) {
+            status.style.color = 'var(--text-2)';
+            status.textContent = 'Checking Chrome for your Instagram login...';
+        }
+
+        let imported = null;
+        for (const browser of ['chrome', 'firefox']) {
+            if (status) status.textContent = `Checking ${browser === 'chrome' ? 'Chrome' : 'Firefox'}...`;
+            try {
+                const data = await api('/api/settings/import-ig-session', {
+                    method: 'POST',
+                    body: JSON.stringify({ browser }),
+                    silent: true,
+                });
+                if (data.success) {
+                    imported = { ...data, browser };
+                    break;
+                }
+            } catch (e) {
+                // try the next browser
+            }
+        }
+
+        if (!imported) {
+            const msg = 'Could not find an Instagram login in Chrome or Firefox. Open instagram.com, log in, then click Easy Setup again.';
+            toast(msg, true);
+            if (status) {
+                status.style.color = 'var(--red)';
+                status.textContent = msg;
+            }
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = idleText;
+            }
+            return;
+        }
+
+        let username = normalizeUsername(imported.username);
+        if (imported.needs_username) {
+            const current = normalizeUsername(document.getElementById('setting-instagram-session').value);
+            const prompted = normalizeUsername(window.prompt('Almost done. Enter your Instagram username (without @):', current));
+            username = prompted || current;
+
+            if (!username) {
+                const msg = 'Login data was imported, but your Instagram username is still needed. Enter it in the field above and click Save Settings.';
+                toast(msg, true);
+                if (status) {
+                    status.style.color = 'var(--orange)';
+                    status.textContent = msg;
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = idleText;
+                }
+                return;
+            }
+
+            await api('/api/settings', {
+                method: 'PUT',
+                body: JSON.stringify({ instagram_session: username }),
+            });
+        }
+
+        setInstagramUsernameFields(username);
+        if (status) status.textContent = `Imported from ${imported.browser === 'chrome' ? 'Chrome' : 'Firefox'}. Checking login...`;
+
+        try {
+            const check = await api('/api/settings/ig-status', { silent: true });
+            if (check.status === 'valid') {
+                if (status) {
+                    status.style.color = 'var(--green)';
+                    status.textContent = `All set. Logged in as @${check.username}.`;
+                }
+                toast(`Instagram login is ready for @${check.username}`);
+            } else if (check.status === 'expired') {
+                const msg = 'Login was found but is expired. Log into instagram.com again, then click Easy Setup.';
+                if (status) {
+                    status.style.color = 'var(--red)';
+                    status.textContent = msg;
+                }
+                toast(msg, true);
+            } else {
+                const msg = check.message || 'Login imported. Click "Check Login Status" if you want to verify now.';
+                if (status) {
+                    status.style.color = 'var(--orange)';
+                    status.textContent = msg;
+                }
+                toast('Instagram login imported');
+            }
+        } catch (e) {
+            if (status) {
+                status.style.color = 'var(--orange)';
+                status.textContent = 'Login imported. Click "Check Login Status" to verify.';
+            }
+            toast('Instagram login imported');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = idleText;
+            }
         }
     }
 
@@ -635,7 +779,7 @@ const App = (() => {
                         await api(`/api/check/${accountId}`, { method: 'POST', silent: true });
                         toast('Recheck triggered');
                     }
-                    setTimeout(loadDashboard, 5000);
+                    setTimeout(() => runSafely(loadDashboard), 5000);
                     break;
                 }
             } catch (e) { /* try next browser */ }
@@ -661,15 +805,12 @@ const App = (() => {
             });
             if (data.success) {
                 if (data.needs_username) {
-                    toast(`Session imported! Enter your IG username below.`);
-                    if (status) status.textContent = `Session saved. Enter your Instagram username in the field above.`;
+                    toast('Login imported. Enter your Instagram username in the field above.');
+                    if (status) status.textContent = 'Login imported. Enter your Instagram username in the field above.';
                 } else {
-                    toast(`Session imported for @${data.username}`);
+                    toast(`Login imported for @${data.username}`);
                     if (status) status.textContent = `Imported session for @${data.username}`;
-                    const sessionInput = document.getElementById('setting-instagram-session');
-                    if (sessionInput) sessionInput.value = data.username;
-                    const modalInput = document.getElementById('account-ig-session');
-                    if (modalInput) modalInput.value = data.username;
+                    setInstagramUsernameFields(data.username);
                 }
             } else {
                 toast(data.error, true);
@@ -786,6 +927,10 @@ const App = (() => {
         return d.innerHTML;
     }
 
+    function runSafely(loaderFn) {
+        loaderFn().catch(() => {});
+    }
+
     return {
         navigate, loadActivity, activityPage, showDetail, showAddIdentity, editIdentity,
         saveIdentity, deleteIdentity, showAddAccount, pickPlatform,
@@ -793,6 +938,6 @@ const App = (() => {
         searchMaigret, showEvent, showLinkResult, confirmLink,
         closeModal, closeModalOverlay, openModal,
         loadSettings, saveSettings, testNotification,
-        checkIgStatus, fixIgSession, importIgSession, importSpotifyCookie, copyCmd,
+        checkIgStatus, easyIgSetup, fixIgSession, importIgSession, importSpotifyCookie, copyCmd,
     };
 })();

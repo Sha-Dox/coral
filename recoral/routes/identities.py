@@ -7,8 +7,9 @@ bp = Blueprint("identities", __name__, url_prefix="/api/identities")
 @bp.route("", methods=["GET"])
 def list_identities():
     identities = db.get_all_identities()
+    latest_events = db.get_identity_latest_events([ident["id"] for ident in identities])
     for ident in identities:
-        ident["latest_event"] = db.get_identity_latest_event(ident["id"])
+        ident["latest_event"] = latest_events.get(ident["id"])
     return jsonify({"success": True, "identities": identities})
 
 

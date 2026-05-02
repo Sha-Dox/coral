@@ -122,9 +122,23 @@ def get_all_identities():
         c = conn.cursor()
         c.execute("SELECT * FROM identities ORDER BY name")
         identities = [dict(r) for r in c.fetchall()]
+        if not identities:
+            return identities
+
+        identity_ids = [ident["id"] for ident in identities]
+        placeholders = ",".join("?" for _ in identity_ids)
+        c.execute(
+            f"SELECT * FROM accounts WHERE identity_id IN ({placeholders}) ORDER BY platform, username",
+            identity_ids,
+        )
+
+        accounts_by_identity = {}
+        for row in c.fetchall():
+            account = dict(row)
+            accounts_by_identity.setdefault(account["identity_id"], []).append(account)
+
         for ident in identities:
-            c.execute("SELECT * FROM accounts WHERE identity_id = ? ORDER BY platform, username", (ident["id"],))
-            ident["accounts"] = [dict(r) for r in c.fetchall()]
+            ident["accounts"] = accounts_by_identity.get(ident["id"], [])
         return identities
 
 
@@ -318,18 +332,78 @@ def get_event_count(account_id=None, identity_id=None, platform=None):
         return c.fetchone()[0]
 
 
-def get_identity_latest_event(identity_id):
+def get_identity_latest_events(identity_ids):
+    if not identity_ids:
+        return {}
+
     with get_db() as conn:
         c = conn.cursor()
-        c.execute("""
-            SELECT e.*, a.platform, a.username
+        placeholders = ",".join("?" for _ in identity_ids)
+        c.execute(
+            f"""
+            SELECT e.*, a.platform, a.username, a.identity_id
             FROM events e
             JOIN accounts a ON e.account_id = a.id
-            WHERE a.identity_id = ?
-            ORDER BY e.created_at DESC LIMIT 1
-        """, (identity_id,))
+            WHERE a.identity_id IN ({placeholders})
+              AND e.id = (
+                  SELECT e2.id
+                  FROM events e2
+                  JOIN accounts a2 ON e2.account_id = a2.id
+                  WHERE a2.identity_id = a.identity_id
+                  ORDER BY e2.created_at DESC, e2.id DESC
+                  LIMIT 1
+              )
+            """,
+            identity_ids,
+        )
+        latest = {}
+        for row in c.fetchall():
+            event = dict(row)
+            identity_id = event.pop("identity_id")
+            latest[identity_id] = event
+        return latest
+
+
+def get_identity_latest_event(identity_id):
+    return get_identity_latest_events([identity_id]).get(identity_id)
+
+
+def get_dashboard_stats():
+    with get_db() as conn:
+        c = conn.cursor()
+        c.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM identities) AS identities,
+                (SELECT COUNT(*) FROM accounts) AS accounts,
+                (SELECT COUNT(*) FROM events WHERE created_at >= datetime('now', '-24 hours')) AS recent_events
+            """
+        )
         row = c.fetchone()
-        return dict(row) if row else None
+        if not row:
+            return {"identities": 0, "accounts": 0, "recent_events": 0}
+        return dict(row)
+
+
+def get_account_alerts():
+    with get_db() as conn:
+        c = conn.cursor()
+        c.execute(
+            """
+            SELECT
+                a.id AS account_id,
+                a.username,
+                a.platform,
+                i.name AS identity_name,
+                COALESCE(a.last_error, 'Unknown error') AS error,
+                a.error_count
+            FROM accounts a
+            JOIN identities i ON a.identity_id = i.id
+            WHERE a.error_count > 0
+            ORDER BY a.error_count DESC, i.name, a.platform, a.username
+            """
+        )
+        return [dict(r) for r in c.fetchall()]
 
 
 # ---------------------------------------------------------------------------
