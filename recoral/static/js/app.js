@@ -119,11 +119,13 @@ const App = (() => {
     function renderEventFeed(containerId, events, emptyMsg) {
         const el = document.getElementById(containerId);
         if (!events || events.length === 0) {
+            el.classList.remove('timeline-feed');
             el.innerHTML = `<div class="empty-state"><p>${esc(emptyMsg)}</p></div>`;
             return;
         }
+        el.classList.add('timeline-feed');
         el.innerHTML = events.map(e => `
-            <div class="event-row" onclick="App.showEvent(${e.id})" title="Click for details">
+            <div class="event-row" onclick="App.showEvent(${e.id})" title="${escAttr(eventHoverText(e))}">
                 <div class="event-platform">${platformIcon(e.platform)}</div>
                 <div class="event-body">
                     <div class="event-top">
@@ -153,6 +155,44 @@ const App = (() => {
         return labels[type] || type;
     }
 
+    function eventHoverText(event) {
+        return [
+            `Action: ${hoverActionDetail(event)}`,
+            `Type: ${eventTypeLabel(event.event_type)}`,
+            `Time: ${formatTimestamp(event.created_at)}`
+        ].join('\n');
+    }
+
+    function hoverActionDetail(event) {
+        const parsed = parseEventData(event.event_data);
+        if (parsed && parsed.old_bio !== undefined && parsed.new_bio !== undefined) {
+            return `${trimForTooltip(parsed.old_bio || '(empty)')} -> ${trimForTooltip(parsed.new_bio || '(empty)')}`;
+        }
+        if (parsed && parsed.old !== undefined && parsed.new !== undefined) {
+            return `${trimForTooltip(parsed.old)} -> ${trimForTooltip(parsed.new)}`;
+        }
+        if (parsed && Array.isArray(parsed.names) && parsed.names.length > 0) {
+            return trimForTooltip(parsed.names.join(', '));
+        }
+        return trimForTooltip(event.summary || eventTypeLabel(event.event_type));
+    }
+
+    function parseEventData(raw) {
+        if (!raw) return null;
+        if (typeof raw === 'object') return raw;
+        try {
+            return JSON.parse(raw);
+        } catch {
+            return null;
+        }
+    }
+
+    function trimForTooltip(value, max = 140) {
+        const text = String(value ?? '').replace(/\s+/g, ' ').trim();
+        if (text.length <= max) return text;
+        return `${text.slice(0, max - 1)}…`;
+    }
+
     async function showEvent(eventId) {
         const data = await api(`/api/events/${eventId}`);
         const e = data.event;
@@ -163,10 +203,14 @@ const App = (() => {
                 <div class="event-platform-lg">${platformIcon(e.platform)}</div>
                 <div>
                     <div class="event-detail-who">@${esc(e.username)}</div>
-                    <div class="event-detail-meta">${esc(e.platform)} &middot; ${esc(e.identity_name)} &middot; ${timeAgo(e.created_at)}</div>
+                    <div class="event-detail-meta">${esc(e.platform)}${e.identity_name ? ` &middot; ${esc(e.identity_name)}` : ''} &middot; ${timeAgo(e.created_at)}</div>
                 </div>
             </div>
             <div class="event-detail-summary">${esc(e.summary)}</div>
+            <div class="event-detail-facts">
+                <div class="event-detail-fact"><span>Action</span><strong>${esc(eventTypeLabel(e.event_type))}</strong></div>
+                <div class="event-detail-fact"><span>Detected</span><strong>${esc(formatTimestamp(e.created_at))}</strong></div>
+            </div>
         `;
 
         if (parsed) {
@@ -904,10 +948,30 @@ const App = (() => {
         return icons[name] || '\ud83d\udcf1';
     }
 
-    function timeAgo(ts) {
-        if (!ts) return '?';
+    function parseTimestamp(ts) {
+        if (!ts || typeof ts !== 'string') return null;
         const utc = ts.endsWith('Z') || ts.includes('+') ? ts : ts.replace(' ', 'T') + 'Z';
-        const s = Math.floor((Date.now() - new Date(utc).getTime()) / 1000);
+        const date = new Date(utc);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function formatTimestamp(ts) {
+        const date = parseTimestamp(ts);
+        if (!date) return 'Unknown';
+        return date.toLocaleString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        });
+    }
+
+    function timeAgo(ts) {
+        const date = parseTimestamp(ts);
+        if (!date) return '?';
+        const s = Math.floor((Date.now() - date.getTime()) / 1000);
         if (s < 0) return 'just now';
         if (s < 60) return 'just now';
         const m = Math.floor(s / 60);
@@ -925,6 +989,10 @@ const App = (() => {
         const d = document.createElement('div');
         d.textContent = String(text);
         return d.innerHTML;
+    }
+
+    function escAttr(text) {
+        return esc(text).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     function runSafely(loaderFn) {

@@ -216,6 +216,22 @@ body {
 /* ---- Events ---- */
 .event-feed { display: flex; flex-direction: column; }
 
+.event-feed.timeline-feed {
+    position: relative;
+}
+
+.event-feed.timeline-feed::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 37px;
+    width: 1px;
+    background: var(--border);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
 .event-row {
     display: flex;
     gap: 14px;
@@ -224,6 +240,8 @@ body {
     align-items: flex-start;
     transition: background var(--transition);
     cursor: pointer;
+    position: relative;
+    z-index: 1;
 }
 
 .event-row:last-child { border-bottom: none; }
@@ -700,6 +718,36 @@ body {
 .event-detail-who { font-size: 16px; font-weight: 600; }
 .event-detail-meta { font-size: 12px; color: var(--text-2); margin-top: 2px; }
 .event-detail-summary { font-size: 14px; color: var(--text-1); padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+
+.event-detail-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.event-detail-fact {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.event-detail-fact span {
+    font-size: 11px;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.event-detail-fact strong {
+    font-size: 13px;
+    color: var(--text-1);
+    font-weight: 600;
+}
 
 .event-detail-data { display: flex; flex-direction: column; gap: 10px; }
 
