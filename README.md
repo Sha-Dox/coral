@@ -14,6 +14,20 @@ you create identities (people), link their social accounts, and coral watches th
 
 built-in username search powered by maigret scans hundreds of sites for matching profiles.
 
+## screenshots
+
+| dashboard | identities |
+|---|---|
+| ![dashboard](screenshots/ui-dashboard.png) | ![identities](screenshots/ui-identities.png) |
+| identity detail | activity timeline |
+| ![identity detail](screenshots/ui-identity-detail.png) | ![activity timeline](screenshots/ui-activity.png) |
+| username search | settings |
+| ![username search](screenshots/ui-search.png) | ![settings](screenshots/ui-settings.png) |
+
+instagram session setup:
+
+![instagram settings](screenshots/ui-settings-instagram.png)
+
 ## install
 
 ```bash
@@ -33,7 +47,7 @@ cp .env.example .env
 
 open http://localhost:3456
 
-`start.sh` uses PM2 when available (daemon mode), and falls back to foreground mode when PM2 is missing. set `CORAL_NO_PM2=1` to always run in foreground mode.
+`start.sh` uses PM2 when available (daemon mode), and falls back to foreground mode when PM2 is missing. in non-debug mode, coral serves via Waitress (production WSGI server). set `CORAL_NO_PM2=1` to always run in foreground mode.
 
 ## setup
 

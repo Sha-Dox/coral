@@ -6,3 +6,4 @@ python-dotenv
 instaloader>=4.10
 pycookiecheat>=0.7.0
 maigret
+waitress>=3.0.0

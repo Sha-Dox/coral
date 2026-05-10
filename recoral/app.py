@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """CORAL - Consolidated OSINT Repository & Activity Ledger"""
 import logging
+import os
 import time
 from flask import Flask
 
@@ -45,4 +46,11 @@ if __name__ == "__main__":
     print(f"\n{'=' * 50}")
     print(f"  CORAL running on http://localhost:{config.PORT}")
     print(f"{'=' * 50}\n")
-    app.run(host=config.HOST, port=config.PORT, debug=config.DEBUG, use_reloader=False)
+    if config.DEBUG:
+        app.run(host=config.HOST, port=config.PORT, debug=True, use_reloader=False)
+    else:
+        from waitress import serve
+
+        threads = max(2, int(os.getenv("CORAL_THREADS", "8")))
+        logger.info("Starting Waitress server (threads=%d)", threads)
+        serve(app, host=config.HOST, port=config.PORT, threads=threads)
